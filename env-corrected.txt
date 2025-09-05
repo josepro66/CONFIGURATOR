@@ -1,0 +1,44 @@
+# ========================================
+# CONFIGURACIÓN DE PAYU SANDBOX
+# ========================================
+PAYU_API_KEY=4Vj8eK4rloUd272L48hsrarnUA
+PAYU_MERCHANT_ID=508029
+PAYU_ACCOUNT_ID_COP=512321
+PAYU_ACCOUNT_ID_USD=512321
+PAYU_ACTION_URL=https://sandbox.checkout.payulatam.com/ppp-web-gateway-payu/
+PAYU_CURRENCY=USD
+
+# ========================================
+# CONFIGURACIÓN DE URLs
+# ========================================
+# URL pública de ngrok (actualizar cuando cambie)
+BASE_URL=https://ac3033863662.ngrok-free.app
+FRONTEND_URL=http://localhost:5175
+
+# ========================================
+# CONFIGURACIÓN DE EMAIL (GMAIL)
+# ========================================
+# Host SMTP de Gmail
+EMAIL_HOST=smtp.gmail.com
+# Puerto 465 para SSL o 587 para TLS
+EMAIL_PORT=465
+# Tu correo de Gmail
+EMAIL_USER=andrewscreative13@gmail.com
+# Contraseña de aplicación de Gmail (NO tu contraseña normal)
+EMAIL_PASS=bafoqitnecskobay
+# Correo donde recibir las notificaciones
+EMAIL_TO=andrewscreative13@gmail.com
+
+# ========================================
+# CONFIGURACIÓN DE DESARROLLO
+# ========================================
+# URL del backend local
+REACT_APP_BACKEND_URL=http://localhost:4000
+VITE_BASE_URL=http://localhost:4000
+VITE_FRONTEND_URL=http://localhost:5175
+
+# ========================================
+# CONFIGURACIÓN DE PAYPAL (OPCIONAL)
+# ========================================
+REACT_APP_PAYPAL_CLIENT_ID=your_paypal_client_id_here
+

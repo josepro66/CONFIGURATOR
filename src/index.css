@@ -7,65 +7,400 @@ html, body, #root {
   min-height: 100vh;
 }
 
+html {
+  background-image: url('/textures/fondo.jpg') !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  background-attachment: fixed !important;
+}
+
 body {
-  background: linear-gradient(to top, #232846 0%, #3a4060 100%) !important;
+  background-image: url('/textures/fondo.jpg') !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  background-attachment: fixed !important;
 }
 
-/* Animaciones personalizadas */
-@keyframes slideIn {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
+/* RESETEO Y BASE */
+.fixed.top-0.right-0 {
+  background: transparent;
+  box-shadow: none;
+  border: none;
+  backdrop-filter: none;
+  width: auto;
+  min-width: auto;
+  max-width: none;
+  transition: all 0.3s ease;
+}
+
+.product-menu {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  background: transparent;
+  padding: 0;
+  border: none;
+  transition: all 0.3s ease;
+  align-items: center;
+  /* Espaciado súper compacto */
+  gap: clamp(0px, 0.15vw, 3px);
+  /* Posición muy cerca del borde */
+  left: clamp(1px, 0.5vw, 15px);
+}
+
+/* ELEMENTOS UNIFICADOS DEL MENÚ IZQUIERDO */
+.product-menu-item,
+.product-menu button,
+.product-menu [class*="button"],
+.product-menu [role="button"] {
+  /* Tamaño más pequeño en móviles */
+  width: clamp(28px, 7vw, 72px);
+  height: clamp(28px, 7vw, 72px);
+  min-width: clamp(28px, 7vw, 72px);
+  min-height: clamp(28px, 7vw, 72px);
+  
+  /* Mantener proporción cuadrada */
+  aspect-ratio: 1 / 1;
+  
+  /* Padding más compacto */
+  padding: clamp(2px, 0.4vw, 7px);
+  
+  /* Texto más pequeño en móviles */
+  font-size: clamp(5px, 1.1vw, 11px);
+  font-weight: bold;
+  
+  /* Layout y estilo */
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  overflow: hidden;
+  position: relative;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  gap: clamp(0px, 0.1vw, 2px);
+}
+
+/* Estilos específicos para botones */
+.product-menu button,
+.product-menu [class*="button"],
+.product-menu [role="button"] {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  color: white;
+}
+
+.product-menu button:hover,
+.product-menu [class*="button"]:hover,
+.product-menu [role="button"]:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  transform: scale(1.05);
+}
+
+.product-menu button:active,
+.product-menu [class*="button"]:active,
+.product-menu [role="button"]:active {
+  transform: scale(0.95);
+}
+
+/* ICONOS Y ELEMENTOS INTERNOS CON TAMAÑO FLUIDO */
+.product-menu-item img,
+.product-menu button img,
+.product-menu [class*="button"] img,
+.product-menu [role="button"] img {
+  width: clamp(18px, 5vw, 60px);
+  height: clamp(8px, 2.5vw, 25px);
+  object-fit: contain;
+}
+
+.product-menu-item svg,
+.product-menu button svg,
+.product-menu [class*="button"] svg,
+.product-menu [role="button"] svg {
+  width: clamp(16px, 4vw, 40px);
+  height: clamp(16px, 4vw, 40px);
+}
+
+.product-menu-item div div,
+.product-menu button span,
+.product-menu [class*="button"] span,
+.product-menu [role="button"] span {
+  font-size: clamp(4px, 1vw, 10px);
+  line-height: 1.1;
+  font-weight: bold;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* MENÚ DERECHO CON TAMAÑOS FLUIDOS */
+.fixed.top-0.right-0 {
+  /* Posición fluida */
+  right: clamp(5px, 1.5vw, 15px);
+}
+
+.fixed.top-0.right-0 button {
+  /* Tamaño fluido */
+  width: clamp(40px, 10vw, 70px);
+  height: clamp(40px, 10vw, 70px);
+  min-width: clamp(40px, 10vw, 70px);
+  min-height: clamp(40px, 10vw, 70px);
+  
+  /* Padding fluido */
+  padding: clamp(6px, 1.5vw, 12px);
+  
+  /* Mantener proporción */
+  aspect-ratio: 1 / 1;
+}
+
+.fixed.top-0.right-0 svg,
+.fixed.top-0.right-0 img {
+  width: clamp(24px, 6vw, 40px);
+  height: clamp(24px, 6vw, 40px);
+}
+
+/* AJUSTES ESPECÍFICOS PARA MÓVILES */
+@media (max-width: 600px) {
+  .fixed.top-0.right-0[style*="width"] {
+    width: min(300px, calc(100vw - 20px)) !important;
+    max-width: calc(100vw - 20px) !important;
   }
-  to {
-    transform: translateX(0);
-    opacity: 1;
+  
+  /* Optimizaciones móviles */
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+  
+  body {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: none;
+  }
+  
+  .product-menu, .fixed.top-0.right-0 {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
   }
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+/* AJUSTES PARA TABLETS */
+@media (min-width: 601px) and (max-width: 1024px) {
+  .fixed.top-0.right-0[style*="width"] {
+    width: min(350px, calc(100vw - 30px)) !important;
+    max-width: calc(100vw - 30px) !important;
   }
 }
 
-@keyframes scaleIn {
-  from {
-    opacity: 0;
-    transform: scale(0.9);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+/* ESTILOS ESPECIALES PARA BOTONES DE EFECTOS */
+.product-menu [class*="equalizer"],
+.product-menu [class*="visualizer"],
+.product-menu [class*="spectrum"],
+.product-menu [class*="mixer"],
+.product-menu [class*="effect"] {
+  background: rgba(0, 255, 255, 0.1) !important;
+  border: 1px solid rgba(0, 255, 255, 0.3) !important;
 }
 
-.animate-slideIn {
-  animation: slideIn 0.4s ease-out;
+.product-menu [class*="equalizer"]:hover,
+.product-menu [class*="visualizer"]:hover,
+.product-menu [class*="spectrum"]:hover,
+.product-menu [class*="mixer"]:hover,
+.product-menu [class*="effect"]:hover {
+  background: rgba(0, 255, 255, 0.2) !important;
+  border: 1px solid rgba(0, 255, 255, 0.5) !important;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
 }
 
-.animate-fadeIn {
+/* PANTALLA DE ROTACIÓN PARA MÓVILES */
+.rotate-screen-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.9) 0%, rgba(26, 26, 26, 0.95) 50%, rgba(0, 0, 0, 0.9) 100%);
+  backdrop-filter: blur(10px);
+  z-index: 9999;
+  display: none;
+  align-items: center;
+  justify-content: center;
   animation: fadeIn 0.5s ease-out;
 }
 
-.animate-fadeInUp {
-  animation: fadeInUp 0.4s ease-out;
+@media screen and (max-width: 600px) and (orientation: landscape) {
+  .rotate-screen-overlay {
+    display: flex !important;
+  }
 }
 
-.animate-scaleIn {
-  animation: scaleIn 0.3s ease-out;
+.rotate-screen-content {
+  text-align: center;
+  color: white;
+  padding: 2rem;
+  max-width: 300px;
+  animation: pulse 2s infinite;
+}
+
+.rotate-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  animation: rotate 3s infinite linear;
+}
+
+.rotate-screen-content h2 {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  color: #00FFFF;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+.rotate-screen-content p {
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
+  opacity: 0.9;
+  line-height: 1.4;
+}
+
+.rotate-arrow {
+  font-size: 3rem;
+  color: #00FFFF;
+  animation: bounce 1.5s infinite;
+  text-shadow: 0 0 15px rgba(0, 255, 255, 0.7);
+}
+
+/* ANIMACIONES */
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-10px); }
+  60% { transform: translateY(-5px); }
+}
+
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.animate-slideIn { animation: slideIn 0.4s ease-out; }
+.animate-fadeIn { animation: fadeIn 0.5s ease-out; }
+.animate-fadeInUp { animation: fadeInUp 0.4s ease-out; }
+.animate-scaleIn { animation: scaleIn 0.3s ease-out; }
+
+/* SOPORTE PARA iOS SAFARI Y DISPOSITIVOS PLEGABLES */
+@supports (-webkit-touch-callout: none) {
+  @media (max-width: 600px) {
+    .product-menu {
+      top: calc(50vh - 20px);
+    }
+    
+    .fixed.top-0.right-0 {
+      top: env(safe-area-inset-top, 0px);
+    }
+  }
+}
+
+/* PANEL DERECHO - BOTONES MÁS PEQUEÑOS EN MÓVILES */
+@media (max-width: 768px) {
+  /* Panel derecho móvil */
+  .mobile-panel {
+    right: -5px !important;
+    width: clamp(70px, 18vw, 100px) !important;
+  }
+  
+  /* Forzar botones del panel derecho más pequeños en móviles */
+  .mobile-panel button,
+  .mobile-panel div[style*="width: clamp"] button {
+    width: clamp(28px, 7vw, 45px) !important;
+    height: clamp(28px, 7vw, 45px) !important;
+    min-width: 28px !important;
+    min-height: 28px !important;
+    max-width: 45px !important;
+    max-height: 45px !important;
+    padding: clamp(2px, 0.5vw, 4px) !important;
+    font-size: clamp(6px, 1.5vw, 10px) !important;
+  }
+  
+  /* Iconos/imágenes dentro de los botones del panel derecho */
+  .mobile-panel button img,
+  .mobile-panel button svg,
+  .mobile-panel div[style*="width: clamp"] button img,
+  .mobile-panel div[style*="width: clamp"] button svg {
+    width: clamp(14px, 3.5vw, 26px) !important;
+    height: clamp(14px, 3.5vw, 26px) !important;
+    min-width: 14px !important;
+    min-height: 14px !important;
+    max-width: 26px !important;
+    max-height: 26px !important;
+  }
+  
+  /* Contenedores de columna más estrechos */
+  .mobile-panel > div[style*="width: clamp"] {
+    width: clamp(50px, 12vw, 80px) !important;
+    padding-top: clamp(15px, 4vh, 120px) !important;
+  }
+  
+  /* Espaciado entre botones más compacto */
+  .mobile-panel div[style*="gap: clamp"],
+  .mobile-panel div[style*="gap:clamp"] {
+    gap: clamp(2px, 0.5vw, 4px) !important;
+  }
+  
+  /* Colores del controlador más pequeños */
+  .mobile-panel div[style*="border-radius: 50%"] {
+    width: clamp(20px, 5vw, 28px) !important;
+    height: clamp(20px, 5vw, 28px) !important;
+  }
+  
+  /* Texto de títulos más pequeño */
+  .mobile-panel p,
+  .mobile-panel h1,
+  .mobile-panel h2,
+  .mobile-panel h3 {
+    font-size: clamp(6px, 1.5vw, 10px) !important;
+  }
+  
+  /* Logo más pequeño en móviles */
+  .mobile-panel img[src*="logo.png"] {
+    height: clamp(12px, 3vw, 16px) !important;
+  }
 }

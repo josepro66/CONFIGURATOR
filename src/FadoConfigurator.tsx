@@ -1,11 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import * as THREE from 'three';
 import gsap from 'gsap';
-import Particles from "react-tsparticles";
-import { loadFull } from "tsparticles";
-import { getPayuSignature } from './api';
-import { PayPalButtons, PayPalScriptProvider } from '@paypal/react-paypal-js';
-import type { ReactPayPalScriptOptions } from '@paypal/react-paypal-js';
+
 import Swal from 'sweetalert2';
 
 // Tipos para los objetos seleccionables
@@ -43,6 +39,26 @@ const FadoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
   // Estados de React
   const [currentView, setCurrentView] = useState<'normal' | 'chasis' | 'faders'>('normal');
   const [selectedForColoring, setSelectedForColoring] = useState<THREE.Mesh | null>(null);
+  const [isLandscape, setIsLandscape] = useState(false);
+  
+  // ==================================================================
+  // DETECCIÓN DE ORIENTACIÓN
+  // ==================================================================
+  useEffect(() => {
+    const checkOrientation = () => {
+      setIsLandscape(window.innerWidth > window.innerHeight);
+    };
+    
+    checkOrientation();
+    window.addEventListener('resize', checkOrientation);
+    window.addEventListener('orientationchange', checkOrientation);
+    
+    return () => {
+      window.removeEventListener('resize', checkOrientation);
+      window.removeEventListener('orientationchange', checkOrientation);
+    };
+  }, []);
+  
   const [chosenColors, setChosenColors] = useState<ChosenColors>(() => {
     const saved = localStorage.getItem('fado_chosenColors');
     if (saved) {
@@ -54,7 +70,7 @@ const FadoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
     }
     return {
       type: 'configUpdate',
-      chasis: 'Gris',
+      chasis: 'Gray',
       faders: {}
     };
   });
@@ -62,44 +78,47 @@ const FadoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
   
   // Estado para selección múltiple de faders
   const [selectedFaders, setSelectedFaders] = useState<THREE.Mesh[]>([]);
+  const [screenshot, setScreenshot] = useState<string | null>(null);
 
-  // Configuración de paletas
+  // Eliminado: estado/efectos de pagos y moneda
+
+  // Palette configuration
   const PALETTES: Palettes = {
     chasis: {
-      'Verde':     { hex: '#7CBA40' },
-      'Amarillo':  { hex: '#F3E600' },
-      'Azul':      { hex: '#325EB7' },
-      'Blanco':    { hex: '#F5F5F5' },
-      'Naranja':   { hex: '#F47119' },
-      'Morado':    { hex: '#7B217E' },
-      'Rojo':      { hex: '#E52421' },
-      'Negro':     { hex: '#1C1C1C' },
-      'Rosa':      { hex: '#FF007F' },
-      'Gris':      { hex: '#808080' },
+      'Green':     { hex: '#7CBA40' },
+      'Yellow':    { hex: '#F3E600' },
+      'Blue':      { hex: '#325EB7' },
+      'White':     { hex: '#F5F5F5' },
+      'Orange':    { hex: '#F47119' },
+      'Purple':    { hex: '#7B217E' },
+      'Red':       { hex: '#E52421' },
+      'Black':     { hex: '#1C1C1C' },
+      'Pink':      { hex: '#FF007F' },
+      'Gray':      { hex: '#808080' },
     },
     faders: {
-      'Verde':     { hex: '#7CBA40' },
-      'Amarillo':  { hex: '#F3E600' },
-      'Azul':      { hex: '#325EB7' },
-      'Blanco':    { hex: '#F5F5F5' },
-      'Naranja':   { hex: '#F47119' },
-      'Morado':    { hex: '#7B217E' },
-      'Rojo':      { hex: '#E52421' },
-      'Negro':     { hex: '#1C1C1C' },
-      'Rosa':      { hex: '#FF007F' },
-      'Gris':      { hex: '#808080' },
+      'Green':     { hex: '#7CBA40' },
+      'Yellow':    { hex: '#F3E600' },
+      'Blue':      { hex: '#325EB7' },
+      'White':     { hex: '#F5F5F5' },
+      'Orange':    { hex: '#F47119' },
+      'Purple':    { hex: '#7B217E' },
+      'Red':       { hex: '#E52421' },
+      'Black':     { hex: '#1C1C1C' },
+      'Pink':      { hex: '#FF007F' },
+      'Gray':      { hex: '#808080' },
     },
     knobs: {
-      'Verde':     { hex: '#7CBA40' },
-      'Amarillo':  { hex: '#F3E600' },
-      'Azul':      { hex: '#325EB7' },
-      'Blanco':    { hex: '#F5F5F5' },
-      'Naranja':   { hex: '#F47119' },
-      'Morado':    { hex: '#7B217E' },
-      'Rojo':      { hex: '#E52421' },
-      'Negro':     { hex: '#1C1C1C' },
-      'Rosa':      { hex: '#FF007F' },
-      'Gris':      { hex: '#808080' },
+      'Green':     { hex: '#7CBA40' },
+      'Yellow':    { hex: '#F3E600' },
+      'Blue':      { hex: '#325EB7' },
+      'White':     { hex: '#F5F5F5' },
+      'Orange':    { hex: '#F47119' },
+      'Purple':    { hex: '#7B217E' },
+      'Red':       { hex: '#E52421' },
+      'Black':     { hex: '#1C1C1C' },
+      'Pink':      { hex: '#FF007F' },
+      'Gray':      { hex: '#808080' },
     }
   };
 
@@ -187,7 +206,7 @@ const FadoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
     const newSelectable: Selectable = { chasis: [], faders: [] };
     const newChosenColors: ChosenColors = {
       type: 'configUpdate',
-      chasis: 'Gris',
+      chasis: 'Gray',
       faders: {}
     };
 
@@ -244,7 +263,7 @@ const FadoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
 
       if (meshName.includes('cubechasis')) {
         child.material = new THREE.MeshPhysicalMaterial({ 
-          color: PALETTES.chasis['Gris'].hex, 
+          color: PALETTES.chasis['Gray'].hex, 
           metalness: 0.8,
           roughness: 0.35,
           clearcoat: 0.85,
@@ -259,7 +278,7 @@ const FadoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
       else if (meshName.includes('fader')) {
         console.log('Fader detectado en Fado:', child.name);
         if (meshName === 'fader1_1' || meshName === 'fader2_1' || meshName === 'fader3_1' || meshName === 'fader4_1' || meshName === 'fader5_1' || meshName === 'fader6_1' || meshName === 'fader7_1' || meshName === 'fader8_1') {
-          const defaultColor = 'Negro';
+          const defaultColor = 'Black';
           child.material = new THREE.MeshStandardMaterial({ color: PALETTES.faders[defaultColor].hex, metalness: 0, roughness: 1 });
           newSelectable.faders.push(child);
           newChosenColors.faders[child.name] = defaultColor;
@@ -269,7 +288,7 @@ const FadoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
             if (mat.color) {
               const lightness = (mat.color.r + mat.color.g + mat.color.b) / 3;
               if (lightness < 0.8) {
-                const defaultColor = 'Negro';
+                const defaultColor = 'Black';
                 mat.color.setHex(parseInt(PALETTES.faders[defaultColor].hex.replace('#', ''), 16));
                 newSelectable.faders.push(child);
                 newChosenColors.faders[child.name] = defaultColor;
@@ -291,7 +310,7 @@ const FadoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
       const loader = new GLTFLoader();
       
       loader.load('./models/fado.glb', (gltf: any) => {
-        console.log('FadoConfigurator: Modelo cargado exitosamente');
+        console.log('FadoConfigurator: Model loaded successfully');
         const model = gltf.scene as THREE.Group;
         modelRef.current = model;
         prepareModelParts(model);
@@ -453,9 +472,9 @@ const FadoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
      // Forzar color rosa en faders cuando se cargan
    useEffect(() => {
      if (selectable.faders.length > 0) {
-       console.log('🎨 Aplicando color negro por defecto a todos los faders...');
+       console.log('🎨 Applying black color by default to all faders...');
        selectable.faders.forEach((fader, index) => {
-         const negroColor = PALETTES.faders['Negro'].hex;
+         const negroColor = PALETTES.faders['Black'].hex;
          // Aplicar el mismo material que MixoConfigurator para faders
          fader.material = new THREE.MeshStandardMaterial({ 
            color: negroColor, 
@@ -635,9 +654,9 @@ const FadoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
   // Función para obtener título
   const getTitle = () => {
     if (currentView === 'chasis') {
-      return "🎛️ CHASIS";
+      return "CHOOSE THE CHASSIS COLOR";
     } else if (currentView === 'faders') {
-      return "🎚️ FADERS";
+      return "CUSTOMIZE THE FADERS";
     }
     return "🎵 FADO";
   };
@@ -662,56 +681,185 @@ const FadoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
         }
       });
     } else if (currentView === 'faders' && selectedFaders.length > 0) {
-      console.log('Aplicando color a faders múltiples:', selectedFaders.map(f => f.name), 'Color:', name);
+      console.log('Applying color to multiple faders:', selectedFaders.map(f => f.name), 'Color:', name);
       const newChosenColors = { ...chosenColors, faders: { ...chosenColors.faders } };
-             selectedFaders.forEach(fader => {
-         // Aplicar el mismo material que MixoConfigurator para faders
-         fader.material = new THREE.MeshStandardMaterial({ 
-           color: colorData.hex, 
-           metalness: 0, 
-           roughness: 1 
-         });
-         newChosenColors.faders[fader.name] = name;
-       });
+      
+      selectedFaders.forEach(fader => {
+        // Aplicar el mismo material que MixoConfigurator para faders
+        fader.material = new THREE.MeshStandardMaterial({ 
+          color: colorData.hex, 
+          metalness: 0, 
+          roughness: 1 
+        });
+        newChosenColors.faders[fader.name] = name;
+      });
+      
       setChosenColors(newChosenColors);
       setSelectedFaders([]);
       return;
     } else if (currentView === 'faders' && selectedForColoring) {
-      console.log('Aplicando color a fader individual:', selectedForColoring.name, 'Color:', name);
+      console.log('Applying color to individual fader:', selectedForColoring.name, 'Color:', name);
       setChosenColors(prev => ({
         ...prev,
         faders: { ...prev.faders, [selectedForColoring.name]: name }
       }));
-             // Aplicar el mismo material que MixoConfigurator para faders
-       selectedForColoring.material = new THREE.MeshStandardMaterial({ 
-         color: colorData.hex, 
-         metalness: 0, 
-         roughness: 1 
-       });
-       console.log('Material de Mixo aplicado al fader');
+      
+      // Aplicar el mismo material que MixoConfigurator para faders
+      selectedForColoring.material = new THREE.MeshStandardMaterial({ 
+        color: colorData.hex, 
+        metalness: 0, 
+        roughness: 1 
+      });
+      console.log('Material applied to fader');
     }
   }, [currentView, selectable, selectedForColoring, selectedFaders, chosenColors]);
 
-  // Función para abrir modal de pago
+  // Enviar configuración por email
   const handleOpenPayment = useCallback(() => {
-    // Aquí puedes implementar la lógica del modal de pago
-    console.log('Abrir modal de pago');
-  }, []);
+    const emailDestino = 'tu-email-de-negocio@ejemplo.com';
+    const asunto = 'Configuración de Fado';
+    const colorSummary = `\nHola,\n\nEsta es mi configuración para el Fado:\n\n- Chasis: ${chosenColors.chasis}\n- Faders: ${Object.values(chosenColors.faders).join(', ') || 'Default'}\n\n(Adjunto también los datos en formato JSON para precisión: ${JSON.stringify(chosenColors)})\n\n¡Gracias!\n`;
+    const mailtoLink = `mailto:${emailDestino}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(colorSummary)}`;
+    window.location.href = mailtoLink;
+  }, [chosenColors]);
 
-  const menuIcons = [
-    { id: 'normal', icon: 'M12 4.5C7 4.5 2.73 7.61 1 12C2.73 16.39 7 19.5 12 19.5C17 19.5 21.27 16.39 23 12C21.27 7.61 17 4.5 12 4.5M12 17C9.24 17 7 14.76 7 12C7 9.24 9.24 7 12 7C14.76 7 17 9.24 17 12C17 14.76 14.76 17 12 17M12 9C10.34 9 9 10.34 9 12C9 13.66 10.34 15 12 15C13.66 15 15 13.66 15 12C15 10.34 13.66 9 12 9Z', title: '🎵 Vista General' },
-    { id: 'chasis', icon: 'fado.png', title: '🎛️ Chasis', isImage: true },
-    { id: 'faders', icon: 'M3 6h18v2H3V6zm0 5h18v2H3v-2zm0 5h18v2H3v-2z', title: '🎚️ Faders' }
-  ];
+  // Función para manejar el checkout de PayU localmente
+  const handlePayUCheckoutLocal = () => {
+    const popupTarget = 'payu_checkout';
+    let popupRef = window.open('', popupTarget);
+    
+    if (!popupRef) {
+      alert('Please allow popups to continue with payment');
+      return;
+    }
 
-  // Configuración de partículas
-  const particlesInit = async (main: any) => {
-    await loadFull(main);
+    // Obtener configuración de la moneda seleccionada
+    const currencyConfig = getFadoCurrencyConfig(selectedCurrency);
+    
+    // Generar firma localmente
+    const signatureString = `${PAYU_CONFIG.API_KEY}~${PAYU_CONFIG.MERCHANT_ID}~${payuData.referenceCode}~${currencyConfig.amount}~${selectedCurrency}`;
+    const signature = MD5(signatureString).toString();
+
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = currencyConfig.url;
+    form.target = popupTarget;
+
+    const formData = {
+      merchantId: PAYU_CONFIG.MERCHANT_ID,
+      accountId: currencyConfig.accountId,
+      description: `Fado Configurator - ${selectedCurrency} ${currencyConfig.symbol}${currencyConfig.amount}`,
+      referenceCode: payuData.referenceCode,
+      amount: currencyConfig.amount,
+      currency: selectedCurrency,
+      buyerEmail: payuData.buyerEmail,
+      signature: signature,
+      test: PAYU_CONFIG.TEST_MODE ? '1' : '0',
+      confirmationUrl: PAYU_CONFIG.CONFIRMATION_URL,
+      responseUrl: PAYU_CONFIG.RESPONSE_URL,
+      // Parámetros para forzar moneda y país
+      lng: currencyConfig.language,
+      // Datos del modal para el webhook
+      extra1: 'Fado',
+      extra2: chosenColors.chasis || 'Custom',
+      extra3: `Applied colors - Faders: ${Object.keys(chosenColors.faders || {}).length}`,
+      extra4: `Fado Configurator - ${selectedCurrency} ${currencyConfig.symbol}${currencyConfig.amount}`,
+      // Additional parameters for PayU
+      payerCountry: 'CO',
+      payerCity: 'Bogota',
+      payerPhone: '+57-300-1234567',
+      // Forzar configuración regional
+      country: 'CO',
+      // Evitar detección automática de ubicación
+      ipAddress: '8.8.4.4'
+    };
+
+    Object.entries(formData).forEach(([key, value]) => {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = key;
+      input.value = value;
+      form.appendChild(input);
+    });
+
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
   };
 
-  return (
-    <PayPalScriptProvider options={{ clientId: "test", currency: "USD" }}>
-      <div className="w-full h-screen bg-black text-gray-200 overflow-hidden relative">
+  const menuIcons = [
+    { 
+      id: 'normal', 
+      icon: 'M12 4.5C7 4.5 2.73 7.61 1 12C2.73 16.39 7 19.5 12 19.5C17 19.5 21.27 16.39 23 12C21.27 7.61 17 4.5 12 4.5M12 17C9.24 17 7 14.76 7 12C7 9.24 9.24 7 12 7C14.76 7 17 9.24 17 12C17 14.76 14.76 17 12 17M12 9C10.34 9 9 10.34 9 12C9 13.66 10.34 15 12 15C13.66 15 15 13.66 15 12C15 10.34 13.66 9 12 9Z',
+      title: 'Full View - See complete MIDI controller'
+    },
+    { 
+      id: 'chasis', 
+      icon: 'fado.png', 
+      isImage: true,
+      title: 'Customize Chassis - Change main body color'
+    },
+    { 
+      id: 'faders', 
+      icon: 'fader.png', 
+      isImage: true,
+      title: 'Customize Faders - Change slider control colors'
+    }
+  ];
+
+  // Configuración de partículas - TEMPORALMENTE DESHABILITADO
+  // const particlesInit = async (main: any) => {
+  //   await loadFull(main);
+  // };
+
+      return (
+      <div>
+        {/* Pantalla de rotación para móviles */}
+        {!isLandscape && window.innerWidth <= 768 && (
+          <div className="fixed inset-0 z-50 bg-black flex flex-col items-center justify-center text-white text-center p-8">
+            <div className="mb-8">
+              <svg 
+                width="80" 
+                height="80" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                className="mx-auto mb-4 animate-bounce text-cyan-400"
+              >
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                <line x1="8" y1="21" x2="16" y2="21"></line>
+                <line x1="12" y1="17" x2="12" y2="21"></line>
+              </svg>
+            </div>
+            <h2 className="text-2xl font-bold mb-4 text-cyan-400">Rotate your device!</h2>
+            <p className="text-lg mb-2">to use the configurator</p>
+            <p className="text-base opacity-80">Please turn your device to landscape mode</p>
+            <div className="mt-8 flex items-center space-x-2 text-sm opacity-60">
+              <div className="w-8 h-5 border-2 border-current rounded-sm"></div>
+              <span>→</span>
+              <div className="w-5 h-8 border-2 border-current rounded-sm"></div>
+            </div>
+          </div>
+        )}
+
+        {/* Imagen de fondo */}
+        <div 
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            zIndex: -1,
+            backgroundImage: 'url(/textures/fondo.jpg)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            backgroundAttachment: 'fixed'
+          }}
+        />
+        <div className="w-full h-screen text-gray-200 overflow-hidden relative" style={{ background: "transparent" }}>
         {/* Fondo degradado estático */}
         <div
           style={{
@@ -722,11 +870,11 @@ const FadoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
             height: "100vh",
             zIndex: 0,
             pointerEvents: "none",
-            background: "linear-gradient(120deg,rgb(42, 40, 51) 0%, #00FFF0 60%, #D8D6F2 100%)"
+            background: "transparent"
           }}
         />
-        {/* Fondo de partículas global */}
-        <Particles
+        {/* Fondo de partículas global - TEMPORALMENTE DESHABILITADO */}
+        {/* <Particles
           id="tsparticles"
           init={particlesInit}
           options={{
@@ -760,37 +908,28 @@ const FadoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
             zIndex: 0,
             pointerEvents: "none"
           }}
-        />
+        /> */}
         {/* Botón de inicio (izquierda) */}
-        <div style={{ position: 'fixed', top: 16, left: 6, zIndex: 51, display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div 
+          className="fixed top-2 md:top-4 z-50 flex items-center gap-2 md:gap-3"
+          style={{ left: '80px' }}
+        >
           <button 
             onClick={() => window.location.href = 'https://www.crearttech.com/' }
-            className="relative px-5 py-2 rounded-full font-bold text-sm uppercase tracking-wider text-white transition-all duration-300 hover:-translate-y-0.5"
-            style={{
-              background: 'linear-gradient(90deg, rgba(0,255,255,0.18) 0%, rgba(122,0,255,0.18) 50%, rgba(255,0,255,0.18) 100%)',
-              border: '1px solid rgba(0, 255, 255, 0.55)'
-            }}
+            className="relative px-3 md:px-5 py-1 md:py-2 rounded-full font-bold text-xs md:text-sm uppercase tracking-wider text-white transition-all duration-300 hover:-translate-y-0.5 bg-gradient-to-r from-cyan-500/20 via-purple-500/20 to-pink-500/20 border border-cyan-500/55"
           >
             <span className="relative z-10 flex items-center gap-2">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-white">
                 <path d="M3 10.5L12 3l9 7.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
                 <path d="M5 9.5V21h14V9.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
-              <span>Inicio</span>
+              <span>Home</span>
             </span>
           </button>
         </div>
 
-        {/* Título y logo centrados */}
+        {/* Título centrado */}
         <div className="absolute top-6 left-1/2 transform -translate-x-1/2 z-10 flex items-center gap-3">
-          <img
-            src="models/logo.png"
-            alt="Logo"
-            className="h-8 w-auto"
-            style={{
-              filter: 'drop-shadow(0 0 8px #a259ff) drop-shadow(0 0 16px #0ff)',
-            }}
-          />
           <h1 
             className="text-2xl font-bold leading-none m-0" 
             style={{ 
@@ -805,9 +944,9 @@ const FadoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
         </div>
 
         {/* Container principal */}
-        <main className="flex w-full h-full" style={{ minHeight: "100vh", height: "100vh", position: "relative", zIndex: 1, overflow: "hidden" }}>
+        <main className="flex w-full h-full" style={{ minHeight: "100vh", height: "100vh", position: "relative", zIndex: 1, overflow: "hidden", background: "transparent" }}>
           {/* Canvas container */}
-          <div className="flex-grow h-full" style={{ position: "relative", zIndex: 1, background: "linear-gradient(180deg,rgb(5, 1, 73) 0%,rgb(82, 2, 46) 100%)" }}> 
+          <div className="flex-grow h-full" style={{ position: "relative", zIndex: 1, background: "transparent" }}> 
             <div
               ref={mountRef}
               className="w-full h-full transition-all duration-300"
@@ -817,25 +956,30 @@ const FadoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
           </div>
         </main>
 
-        {/* Panel de UI */}
-        <div
-          className={`fixed top-0 right-0 h-screen border-l border-gray-700 shadow-2xl transition-all duration-400 flex overflow-hidden z-10 ${
-            currentView === 'normal' ? 'w-28' : 'w-[320px]'
-          }`}
-          style={{
-            backgroundColor: 'rgba(0, 0, 0, 0.2)',
-            background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.2) 0%, rgba(26, 26, 26, 0.2) 25%, rgba(10, 10, 10, 0.2) 50%, rgba(26, 26, 26, 0.2) 75%, rgba(0, 0, 0, 0.2) 100%)',
-            boxShadow: '0 0 16px 2px rgba(0, 255, 255, 0.4), -6px 0 16px 0 rgba(0, 255, 255, 0.3), inset 0 0 10px rgba(0,0,0,0.8)',
-            borderLeft: '2px solid rgba(0, 255, 255, 0.8)',
-            backdropFilter: 'blur(10px)',
-            zIndex: 10
-          }}
-        >
+                 {/* Panel de UI */}
+         <div
+           style={{
+             position: 'fixed',
+             top: 0,
+             width: currentView === 'normal' ? 'clamp(80px, 20vw, 112px)' : 'clamp(280px, 70vw, 320px)',
+             height: '100vh',
+             display: 'flex',
+             zIndex: 10,
+             transition: 'all 0.4s ease'
+           }}
+           className="mobile-panel right-[-35px] md:right-[-20px]"
+         >
 
           {/* Columna de controles de vista */}
-          <div className="w-28 p-4 flex-shrink-0" style={{ paddingTop: '200px' }}>
-            <div className="flex flex-col gap-1.5">
-              {menuIcons.map(({ id, icon, title, isImage }) => (
+          <div 
+            style={{
+              width: 'clamp(60px, 15vw, 112px)',
+              flexShrink: 0,
+              paddingTop: 'clamp(20px, 5vh, 160px)'
+            }}
+          >
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(4px, 1vw, 6px)' }}>
+              {menuIcons.map(({ id, icon, isImage, title }) => (
                 <button
                   key={id}
                   onClick={
@@ -843,20 +987,73 @@ const FadoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
                       ? () => changeView(id as 'normal' | 'chasis' | 'faders')
                       : () => changeView(id as 'normal' | 'chasis' | 'faders')
                   }
-                  className={`w-full aspect-square border-2 rounded-lg flex items-center justify-center p-2 transition-all duration-300 text-white relative ${
-                    currentView === id
-                      ? 'bg-gradient-to-br from-[#00FFFF] to-[#0080FF] border-[#00FFFF] shadow-lg'
-                      : 'border-[#00FFFF] bg-gradient-to-br from-[#000000] to-[#1a1a1a] hover:from-[#00FFFF] hover:to-[#0080FF] hover:border-[#00FFFF] hover:shadow-lg'
-                  }`}
-                  title={title}
+                  style={{
+                    width: 'clamp(40px, 10vw, 70px)',
+                    height: 'clamp(40px, 10vw, 70px)',
+                    padding: 'clamp(4px, 1vw, 8px)',
+                    aspectRatio: '1 / 1',
+                    border: '2px solid #00FFFF',
+                    borderRadius: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    position: 'relative',
+                    transition: 'all 0.3s ease',
+                    color: 'white',
+                    cursor: 'pointer',
+                    background: currentView === id 
+                      ? 'linear-gradient(to bottom right, #00FFFF, #0080FF)' 
+                      : 'linear-gradient(to bottom right, #000000, #1a1a1a)',
+                    boxShadow: currentView === id ? '0 10px 15px -3px rgba(0, 0, 0, 0.1)' : 'none'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'linear-gradient(to bottom right, #00FFFF, #0080FF)';
+                    e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1)';
+                    const tooltip = document.createElement('div');
+                    tooltip.className = 'custom-tooltip';
+                    tooltip.textContent = title;
+                    tooltip.style.cssText = `
+                      position: fixed;
+                      left: ${e.clientX - 20}px;
+                      top: ${e.clientY - 20}px;
+                      transform: translateX(-100%);
+                      background: #8503adcc;
+                      color: white;
+                      padding: 12px 16px;
+                      border-radius: 8px;
+                      font-size: 14px;
+                      font-weight: bold;
+                      white-space: nowrap;
+                      z-index: 999999;
+                      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+                      border: 2px solid #f87171;
+                      pointer-events: none;
+                    `;
+                    tooltip.id = 'temp-tooltip';
+                    document.body.appendChild(tooltip);
+                  }}
+                  onMouseLeave={(e) => {
+                    if (currentView !== id) {
+                      e.currentTarget.style.background = 'linear-gradient(to bottom right, #000000, #1a1a1a)';
+                      e.currentTarget.style.boxShadow = 'none';
+                    }
+                    const tooltip = document.getElementById('temp-tooltip');
+                    if (tooltip) {
+                      tooltip.remove();
+                    }
+                  }}
                 >
                   {isImage ? (
                     <img 
                       src={`textures/${icon}`}
-                      alt={title}
-                      className="w-full h-full mx-auto my-auto object-contain"
+                      alt="Menu icon"
                       style={{
-                        // Sin filtro para mostrar colores originales
+                        width: 'clamp(20px, 5vw, 40px)',
+                        height: 'clamp(20px, 5vw, 40px)',
+                        objectFit: 'contain',
+                        margin: 'auto',
+                        filter: id === 'faders' ? 'brightness(1.5) contrast(1.3) saturate(1.2) drop-shadow(0 0 6px rgba(0, 255, 255, 0.5))' : 'none',
+                        backgroundColor: id === 'faders' ? 'rgba(0, 0, 0, 0.1)' : 'transparent'
                       }}
                       onError={(e) => {
                         console.error('Error loading image:', e);
@@ -867,7 +1064,13 @@ const FadoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
                     <svg 
                       xmlns="http://www.w3.org/2000/svg" 
                       viewBox={id === 'faders' ? '0 0 24 24' : '0 0 24 24'}
-                      className="w-4/5 h-4/5 mx-auto my-auto fill-white text-white"
+                      style={{
+                        width: 'clamp(20px, 5vw, 40px)',
+                        height: 'clamp(20px, 5vw, 40px)',
+                        fill: 'white',
+                        color: 'white',
+                        margin: 'auto'
+                      }}
                       fill="#fff"
                     >
                       <path d={icon} />
@@ -879,79 +1082,127 @@ const FadoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
           </div>
 
           {/* Contenido de la UI */}
-          <div className="flex-1 p-2 flex flex-col">
-            {/* Header */}
+          <div 
+            style={{
+              flex: 1,
+              padding: 'clamp(4px, 1vw, 8px)',
+              display: 'flex',
+              flexDirection: 'column'
+            }}
+          >
+            {/* Header - Solo logo en vista normal */}
             <div
-              className={`flex items-center pb-5 border-b border-gray-600 pl-0 ${currentView === 'normal' ? 'justify-center items-center gap-0' : 'justify-center gap-2'}`}
-              style={currentView === 'normal' ? { minHeight: '48px' } : {}}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                paddingBottom: 'clamp(12px, 3vw, 20px)',
+                borderBottom: '1px solid #4b5563',
+                paddingLeft: 0,
+                justifyContent: 'center',
+                gap: currentView === 'normal' ? 0 : 'clamp(4px, 1vw, 8px)',
+                minHeight: currentView === 'normal' ? 'clamp(40px, 10vw, 48px)' : 'auto'
+              }}
             >
-              {currentView === 'normal' ? (
-                <img
-                  src="models/logo.png"
-                  alt="Logo"
-                  className="h-6 w-auto"
-                  style={{
-                    filter: 'drop-shadow(0 0 8px #a259ff) drop-shadow(0 0 16px #0ff)',
-                  }}
-                />
-              ) : (
-                <>
-                  <img
-                    src="models/logo.png"
-                    alt="Logo"
-                    className="h-8 w-auto"
-                    style={{
-                      filter: 'drop-shadow(0 0 8px #a259ff) drop-shadow(0 0 16px #0ff)',
-                    }}
-                  />
-                  <h2
-                    className="m-0 font-bold tracking-widest text-xl md:text-3xl whitespace-normal break-words text-left"
-                    style={{
-                      fontFamily: 'Gotham Black, Arial, sans-serif',
-                      color: '#fff',
-                      textShadow: '0 0 12px #a259ff, 0 0 24px #0ff, 0 0 2px #fff',
-                      letterSpacing: '0.04em',
-                      marginLeft: '-0.25em',
-                      overflowWrap: 'anywhere',
-                    }}
-                  >
-                    FADO
-                  </h2>
-                </>
-              )}
+              <img
+                src="models/logo.png"
+                alt="Logo"
+                style={{
+                  height: currentView === 'normal' ? 'clamp(20px, 5vw, 24px)' : 'clamp(28px, 7vw, 32px)',
+                  width: 'auto',
+                  filter: 'drop-shadow(0 0 8px #a259ff) drop-shadow(0 0 16px #0ff)'
+                }}
+              />
             </div>
 
-            {/* Sección de colores */}
-            <div className="mt-6 animate-fadeIn">
-              <p className="font-black text-sm tracking-wide uppercase m-0 mb-3 text-gray-200 text-left animate-fadeIn">
-                {getTitle()}
-              </p>
-              <div className="grid grid-cols-2 gap-x-0 gap-y-0 p-0 justify-items-end ml-auto animate-scaleIn">
-                {Object.entries(getCurrentColors()).map(([name, colorData], index) => (
-                  <div
-                    key={name}
-                    className="w-10 h-10 rounded-full cursor-pointer border border-[#a259ff] shadow-[0_0_6px_1px_#a259ff55] transition-all duration-200 hover:scale-110 animate-fadeInUp"
-                    style={{ 
-                      backgroundColor: colorData.hex,
-                      animationDelay: `${index * 50}ms`
-                    }}
-                    title={name}
-                    onClick={() => applyColor(name, colorData)}
-                  />
-                ))}
+            {/* Sección de colores - solo visible cuando no está en vista normal */}
+            {currentView !== 'normal' && (
+              <div style={{ marginTop: 'clamp(16px, 4vw, 24px)' }} className="animate-fadeIn">
+                <p 
+                  style={{
+                    fontWeight: 900,
+                    fontSize: 'clamp(10px, 2.5vw, 14px)',
+                    letterSpacing: '0.05em',
+                    textTransform: 'uppercase',
+                    margin: '0 0 clamp(8px, 2vw, 12px) 0',
+                    color: '#e5e7eb',
+                    textAlign: 'left'
+                  }}
+                  className="animate-fadeIn"
+                >
+                  {getTitle()}
+                </p>
+                <div 
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(2, 1fr)',
+                    gap: 'clamp(4px, 1vw, 6px)',
+                    padding: 0,
+                    justifyItems: 'end',
+                    marginLeft: 'auto'
+                  }}
+                  className="animate-scaleIn"
+                >
+                  {Object.entries(getCurrentColors()).map(([name, colorData], index) => (
+                    <div
+                      key={name}
+                      style={{
+                        width: 'clamp(32px, 8vw, 40px)',
+                        height: 'clamp(32px, 8vw, 40px)',
+                        borderRadius: '50%',
+                        cursor: 'pointer',
+                        border: '1px solid #a259ff',
+                        boxShadow: '0 0 6px 1px rgba(162, 89, 255, 0.33)',
+                        transition: 'all 0.2s ease',
+                        backgroundColor: colorData.hex,
+                        animationDelay: `${index * 50}ms`
+                      }}
+                      title={name}
+                      onClick={() => applyColor(name, colorData)}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'scale(1.1)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'scale(1)';
+                      }}
+                      className="animate-fadeInUp"
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Información de selección múltiple */}
-            {(currentView === 'faders' && selectedForColoring) || (currentView === 'faders' && selectedFaders.length > 0) && (
-              <div className="mb-4 p-3 bg-gray-800 rounded-lg animate-scaleIn">
-                <h4 className="text-lg font-semibold text-white mb-2 animate-fadeIn">
+            {currentView === 'faders' && (selectedForColoring || selectedFaders.length > 0) && (
+              <div 
+                style={{
+                  marginBottom: 'clamp(12px, 3vw, 16px)',
+                  padding: 'clamp(8px, 2vw, 12px)',
+                  background: '#1f2937',
+                  borderRadius: '8px'
+                }}
+                className="animate-scaleIn"
+              >
+                <h4 
+                  style={{
+                    fontSize: 'clamp(12px, 3vw, 18px)',
+                    fontWeight: 600,
+                    color: 'white',
+                    marginBottom: 'clamp(4px, 1vw, 8px)'
+                  }}
+                  className="animate-fadeIn"
+                >
                   {selectedFaders.length > 0 
                     ? `Selección múltiple (${selectedFaders.length} elementos)`
                     : `Seleccionado: ${selectedForColoring ? selectedForColoring.name : ''}`
                   }
                 </h4>
-                <p className="text-gray-300 text-sm animate-fadeIn">
+                <p 
+                  style={{
+                    color: '#d1d5db',
+                    fontSize: 'clamp(10px, 2vw, 14px)'
+                  }}
+                  className="animate-fadeIn"
+                >
                   {selectedFaders.length > 0
                     ? 'Haz clic en un color para aplicarlo a todos los faders seleccionados'
                     : 'Haz clic en un color para aplicarlo al fader seleccionado'
@@ -968,11 +1219,13 @@ const FadoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
             onClick={handleOpenPayment}
             className="fixed bottom-10 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 text-lg font-bold uppercase tracking-wide text-black bg-purple-400 border-none rounded cursor-pointer transition-all duration-200 shadow-lg hover:bg-yellow-200 hover:scale-105 hover:shadow-xl shadow-[0_0_8px_2px_#a259ff80,0_0_16px_4px_#0ff5]"
           >
-            AÑADIR AL CARRITO
+            Finalizar y Enviar Configuración
           </button>
         )}
+
+        {/* Flujo de pago eliminado: ahora se usa mailto */}
       </div>
-    </PayPalScriptProvider>
+    </div>
   );
 };
 

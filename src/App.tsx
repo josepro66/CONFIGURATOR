@@ -1,73 +1,158 @@
-import React, { useState } from 'react';
-import BeatoConfigurator from './BeatoConfigurator';
-import KnoboConfigurator from './KnoboConfigurator';
-import MixoConfigurator from './MixoConfigurator';
-import Beato16Configurator from './Beato16Configurator';
-import LoopoConfigurator from './LoopoConfigurator';
-import FadoConfigurator from './FadoConfigurator';
+import React, { useState, useEffect, Suspense, useRef } from 'react';
+import { Canvas } from '@react-three/fiber';
+import { useProgress } from '@react-three/drei';
+import BeatoLoadingScreen from './components/BeatoLoadingScreen';
+import SkeletonLoader from './components/SkeletonLoader';
+import ErrorBoundary from './components/ErrorBoundary';
+import { useModelReady } from './hooks/useModelReady';
+import { usePrefetch } from './hooks/usePrefetch';
+
+// Imports lazy para componentes pesados
+// Estos componentes se cargan solo cuando son necesarios, reduciendo el bundle inicial
+import {
+  PagoFinalizado,
+  ConfiguratorWrapper
+} from './lazy/components';
+
+// Imports para componentes con pantallas de carga específicas
+import Beato8WithLoading from './components/Beato8WithLoading';
+import Beato16WithLoading from './components/Beato16WithLoading';
+import KnoboWithLoading from './components/KnoboWithLoading';
+import MixoWithLoading from './components/MixoWithLoading';
+import LoopoWithLoading from './components/LoopoWithLoading';
+import FadoWithLoading from './components/FadoWithLoading';
 
 function App() {
   const [currentProduct, setCurrentProduct] = useState<'beato8' | 'knobo' | 'mixo' | 'beato16' | 'loopo' | 'fado'>('beato8');
+  const [showPaymentResult, setShowPaymentResult] = useState(false);
+  const [paymentData, setPaymentData] = useState<any>(null);
+  const [isMobile, setIsMobile] = useState(false);
+  const [isLandscape, setIsLandscape] = useState(false);
+  const { isLoading } = useModelReady();
+  const { prefetchOnHover, prefetchOnIntersection } = usePrefetch();
+  
+  // Ref para el botón de configurar (para prefetch en viewport)
+  const configButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Verificar si estamos en la página de pago finalizado
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const hasPaymentParams = urlParams.has('referenceCode') || urlParams.has('reference_sale') || 
+                            urlParams.has('status') || urlParams.has('state_pol');
+    
+    if (hasPaymentParams) {
+      setShowPaymentResult(true);
+      setPaymentData({
+        referenceCode: urlParams.get('referenceCode') || urlParams.get('reference_sale'),
+        status: urlParams.get('status') || urlParams.get('state_pol'),
+        amount: urlParams.get('amount') || urlParams.get('value'),
+        currency: urlParams.get('currency'),
+        description: urlParams.get('description'),
+        transactionId: urlParams.get('transaction_id') || urlParams.get('transactionId')
+      });
+    }
+  }, []);
+
+  // Detección de móvil y orientación
+  useEffect(() => {
+    const checkDeviceAndOrientation = () => {
+      const userAgent = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      const screenSize = window.innerWidth <= 768;
+      setIsMobile(userAgent || screenSize);
+      setIsLandscape(window.innerWidth > window.innerHeight);
+    };
+    
+    checkDeviceAndOrientation();
+    window.addEventListener('resize', checkDeviceAndOrientation);
+    window.addEventListener('orientationchange', checkDeviceAndOrientation);
+    
+    return () => {
+      window.removeEventListener('resize', checkDeviceAndOrientation);
+      window.removeEventListener('orientationchange', checkDeviceAndOrientation);
+    };
+  }, []);
+
+  // Prefetch del configurador cuando el botón entra en viewport
+  useEffect(() => {
+    if (configButtonRef.current) {
+      prefetchOnIntersection(() => import('./components/Beato8WithLoading'), configButtonRef.current);
+    }
+  }, [prefetchOnIntersection]);
 
   const handleProductChange = (product: 'beato8' | 'knobo' | 'mixo' | 'beato16' | 'loopo' | 'fado') => {
     setCurrentProduct(product);
   };
 
+  // Función para prefetch específico según el producto
+  const handleProductHover = (product: 'beato8' | 'knobo' | 'mixo' | 'beato16' | 'loopo' | 'fado') => {
+    const lazyImports = {
+      beato8: () => import('./components/Beato8WithLoading'),
+      beato16: () => import('./components/Beato16WithLoading'),
+      knobo: () => import('./components/KnoboWithLoading'),
+      mixo: () => import('./components/MixoWithLoading'),
+      loopo: () => import('./components/LoopoWithLoading'),
+      fado: () => import('./components/FadoWithLoading')
+    };
+    
+    prefetchOnHover(lazyImports[product], {} as React.MouseEvent);
+  };
+
   const menuItems = [
-    { id: 'beato8', name: 'BEATO8', icon: 'textures/beato.png', description: 'Controlador MIDI', isImage: true },
-    { id: 'beato16', name: 'BEATO16', icon: 'textures/beato16.png', description: '16 Botones + 4 Knobs', isImage: true },
-    { id: 'knobo', name: 'KNOBO', icon: 'textures/knobo.png', description: 'Controlador de Knobs', isImage: true },
-    { id: 'mixo', name: 'MIXO', icon: 'textures/mixo.png', description: 'Mixer con Faders', isImage: true },
-    { id: 'loopo', name: 'LOOPO', icon: 'textures/loopo.png', description: 'Controlador Loop', isImage: true },
-    { id: 'fado', name: 'FADO', icon: 'textures/fado.png', description: '8 Faders', isImage: true }
+    { id: 'beato8', name: 'BEATO8', icon: 'textures/beato.png', isImage: true },
+    { id: 'beato16', name: 'BEATO16', icon: 'textures/beato16.png', isImage: true },
+    { id: 'knobo', name: 'KNOBO', icon: 'textures/knobo.png', isImage: true },
+    { id: 'mixo', name: 'MIXO', icon: 'textures/mixo.png', isImage: true },
+    { id: 'loopo', name: 'LOOPO', icon: 'textures/loopo.png', isImage: true },
+    { id: 'fado', name: 'FADO', icon: 'textures/fado.png', isImage: true }
   ] as const;
 
+  // Si estamos en la página de pago finalizado, mostrar solo esa página con lazy loading
+  if (showPaymentResult) {
+    return (
+      <ErrorBoundary>
+        <Suspense fallback={<SkeletonLoader type="payment" />}>
+          <PagoFinalizado />
+        </Suspense>
+      </ErrorBoundary>
+    );
+  }
+
   return (
-    <div className="App">
+    <div className={`App ${isMobile ? 'mobile-device' : ''}`}>
+      {/* Pantalla de rotación para móviles */}
+      {isMobile && !isLandscape && (
+        <div className="rotate-screen-overlay">
+          <div className="rotate-screen-content">
+            <div className="rotate-icon">📱</div>
+            <h2>Gira tu dispositivo</h2>
+            <p>Para una mejor experiencia, usa el configurador en modo horizontal</p>
+            <div className="rotate-arrow">↻</div>
+          </div>
+        </div>
+      )}
+
+      {/* Pantalla de carga global */}
+      <BeatoLoadingScreen isVisible={isLoading} />
+
       {/* Navigation Menu */}
-      <div style={{
-        position: 'fixed',
-        top: '50%',
-        left: 10,
-        transform: 'translateY(-50%)',
-        zIndex: 1000,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '6px',
-        backgroundColor: 'rgba(0, 0, 0, 0.2)',
-        background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.2) 0%, rgba(26, 26, 26, 0.2) 25%, rgba(10, 10, 10, 0.2) 50%, rgba(26, 26, 26, 0.2) 75%, rgba(0, 0, 0, 0.2) 100%)',
-        padding: '12px 6px',
-        borderRadius: '12px',
-        boxShadow: '0 0 20px 4px rgba(0, 255, 255, 0.4), inset 0 0 10px rgba(0,0,0,0.8)',
-        backdropFilter: 'blur(15px)',
-        border: '2px solid rgba(0, 255, 255, 0.8)'
-      }}>
+      <div className="product-menu">
         {menuItems.map((item) => (
-          <button
+          <button 
+            className="product-menu-item"
             key={item.id}
             onClick={() => handleProductChange(item.id)}
+            ref={item.id === 'beato8' ? configButtonRef : undefined}
             style={{
-              padding: '4px 8px',
-              backgroundColor: currentProduct === item.id ? 'rgba(0, 255, 255, 0.3)' : 'transparent',
+              backgroundColor: currentProduct === item.id ? 'rgba(4, 19, 19, 0.3)' : 'transparent',
               background: currentProduct === item.id ? 'linear-gradient(135deg, rgba(0, 255, 255, 0.3) 0%, rgba(0, 128, 255, 0.2) 100%)' : 'transparent',
               border: currentProduct === item.id ? '1px solid #00FFFF' : '1px solid rgba(0, 255, 255, 0.3)',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontSize: '10px',
-              fontWeight: 'bold',
               color: currentProduct === item.id ? '#00FFFF' : '#ffffff',
-              transition: 'all 0.3s ease',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: '2px',
-              minWidth: '60px',
-              justifyContent: 'center',
-              position: 'relative',
-              overflow: 'hidden',
               boxShadow: currentProduct === item.id ? '0 0 8px 2px rgba(0, 255, 255, 0.4)' : 'none'
             }}
             onMouseEnter={(e) => {
+              // Prefetch del configurador cuando el usuario hace hover
+              handleProductHover(item.id);
+              
               if (currentProduct !== item.id) {
                 e.currentTarget.style.backgroundColor = 'rgba(0, 255, 255, 0.2)';
                 e.currentTarget.style.transform = 'translateX(3px) scale(1.02)';
@@ -108,9 +193,7 @@ function App() {
               <div style={{ fontSize: '8px', fontWeight: 'bold', marginBottom: '1px' }}>
                 {item.name}
               </div>
-              <div style={{ fontSize: '6px', opacity: 0.7, fontWeight: 'normal' }}>
-                {item.description}
-              </div>
+
             </div>
             {currentProduct === item.id && (
               <div style={{
@@ -122,32 +205,28 @@ function App() {
                 height: '50%',
                 backgroundColor: '#00FFFF',
                 borderRadius: '1px',
-                animation: 'pulse 2s infinite',
-                boxShadow: '0 0 8px 2px rgba(0, 255, 255, 0.6)'
+                boxShadow: '0 0 4px 1px rgba(6, 27, 27, 0.6)'
               }} />
             )}
           </button>
         ))}
       </div>
 
-      {/* Configurators */}
-      {currentProduct === 'beato8' ? (
-        <BeatoConfigurator onProductChange={handleProductChange} />
-      ) : currentProduct === 'beato16' ? (
-        <Beato16Configurator onProductChange={handleProductChange} />
-      ) : currentProduct === 'knobo' ? (
-        <KnoboConfigurator onProductChange={handleProductChange} />
-      ) : currentProduct === 'mixo' ? (
-        <MixoConfigurator onProductChange={handleProductChange} />
-      ) : currentProduct === 'loopo' ? (
-        <LoopoConfigurator onProductChange={handleProductChange} />
-      ) : currentProduct === 'fado' ? (
-        <FadoConfigurator onProductChange={handleProductChange} />
-      ) : (
-        <BeatoConfigurator onProductChange={handleProductChange} />
-      )}
-
-
+      {/* Main Content con lazy loading */}
+              <main className="canvas-wrap">
+          <ErrorBoundary>
+            <Suspense fallback={<SkeletonLoader type="configurator" />}>
+              <ConfiguratorWrapper>
+                {currentProduct === 'beato8' && <Beato8WithLoading />}
+                {currentProduct === 'knobo' && <KnoboWithLoading />}
+                {currentProduct === 'mixo' && <MixoWithLoading />}
+                {currentProduct === 'beato16' && <Beato16WithLoading />}
+                {currentProduct === 'loopo' && <LoopoWithLoading />}
+                {currentProduct === 'fado' && <FadoWithLoading />}
+              </ConfiguratorWrapper>
+            </Suspense>
+          </ErrorBoundary>
+        </main>
     </div>
   );
 }

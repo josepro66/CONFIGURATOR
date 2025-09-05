@@ -3,9 +3,9 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import gsap from 'gsap';
-import Particles from "react-tsparticles";
-import { loadFull } from "tsparticles";
-import { getPayuSignature } from './api';
+
+import { PAYU_CONFIG, getMixoCurrencyConfig } from './payuConfig.js';
+import MD5 from 'crypto-js/md5';
 import { PayPalButtons, PayPalScriptProvider } from '@paypal/react-paypal-js';
 import type { ReactPayPalScriptOptions } from '@paypal/react-paypal-js';
 import Swal from 'sweetalert2';
@@ -57,6 +57,26 @@ const MixoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
   // Estados de React
   const [currentView, setCurrentView] = useState<'normal' | 'chasis' | 'buttons' | 'knobs' | 'faders'>('normal');
   const [selectedForColoring, setSelectedForColoring] = useState<THREE.Mesh | null>(null);
+  const [isLandscape, setIsLandscape] = useState(false);
+  
+  // ==================================================================
+  // DETECCIÓN DE ORIENTACIÓN
+  // ==================================================================
+  useEffect(() => {
+    const checkOrientation = () => {
+      setIsLandscape(window.innerWidth > window.innerHeight);
+    };
+    
+    checkOrientation();
+    window.addEventListener('resize', checkOrientation);
+    window.addEventListener('orientationchange', checkOrientation);
+    
+    return () => {
+      window.removeEventListener('resize', checkOrientation);
+      window.removeEventListener('orientationchange', checkOrientation);
+    };
+  }, []);
+  
   const [chosenColors, setChosenColors] = useState<ChosenColors>(() => {
     const saved = localStorage.getItem('mixo_chosenColors');
     if (saved) {
@@ -194,6 +214,70 @@ const MixoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
       setShowPaymentModal(true);
     }, 50);
   }, [rendererRef, sceneRef, cameraRef, controlsRef, CAMERA_VIEWS, setScreenshot, setShowPaymentModal]);
+
+  // Función para manejar el checkout de PayU localmente
+  const handlePayUCheckoutLocal = () => {
+    const popupTarget = 'payu_checkout';
+    let popupRef = window.open('', popupTarget);
+    
+    if (!popupRef) {
+      alert('Please allow popups to continue with payment');
+      return;
+    }
+
+    // Obtener configuración de la moneda seleccionada
+    const currencyConfig = getMixoCurrencyConfig(selectedCurrency);
+    
+    // Generar firma localmente
+    const signatureString = `${PAYU_CONFIG.API_KEY}~${PAYU_CONFIG.MERCHANT_ID}~${payuData.referenceCode}~${currencyConfig.amount}~${selectedCurrency}`;
+    const signature = MD5(signatureString).toString();
+
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = currencyConfig.url;
+    form.target = popupTarget;
+
+    const formData = {
+      merchantId: PAYU_CONFIG.MERCHANT_ID,
+      accountId: currencyConfig.accountId,
+      description: `Mixo Configurator - ${selectedCurrency} ${currencyConfig.symbol}${currencyConfig.amount}`,
+      referenceCode: payuData.referenceCode,
+      amount: currencyConfig.amount,
+      currency: selectedCurrency,
+      buyerEmail: payuData.buyerEmail,
+      signature: signature,
+      test: PAYU_CONFIG.TEST_MODE ? '1' : '0',
+      confirmationUrl: PAYU_CONFIG.CONFIRMATION_URL,
+      responseUrl: PAYU_CONFIG.RESPONSE_URL,
+      // Parámetros para forzar moneda y país
+      lng: currencyConfig.language,
+      // Datos del modal para el webhook
+      extra1: 'Mixo',
+      extra2: chosenColors.chasis || 'Custom',
+      extra3: `Applied colors - Faders: ${Object.keys(chosenColors.faders || {}).length}`,
+      extra4: `Mixo Configurator - ${selectedCurrency} ${currencyConfig.symbol}${currencyConfig.amount}`,
+      // Additional parameters for PayU
+      payerCountry: 'CO',
+      payerCity: 'Bogota',
+      payerPhone: '+57-300-1234567',
+      // Forzar configuración regional
+      country: 'CO',
+      // Evitar detección automática de ubicación
+      ipAddress: '8.8.4.4'
+    };
+
+    Object.entries(formData).forEach(([key, value]) => {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = key;
+      input.value = value;
+      form.appendChild(input);
+    });
+
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+  };
 
   // Referencias para la posición inicial de la cámara
   const initialCameraPosRef = useRef<THREE.Vector3 | null>(null);
@@ -656,11 +740,11 @@ const MixoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
   // Función para obtener el título
   const getTitle = () => {
     switch (currentView) {
-      case 'chasis': return 'ELIGE EL COLOR DEL CHASIS';
-      case 'buttons': return 'PERSONALIZA LOS BOTONES';
-      case 'knobs': return 'PERSONALIZA LOS KNOBS';
-      case 'faders': return 'PERSONALIZA LOS FADERS';
-      default: return 'ELIGE UN COLOR';
+              case 'chasis': return 'CHOOSE THE CHASSIS COLOR';
+              case 'buttons': return 'CUSTOMIZE THE BUTTONS';
+              case 'knobs': return 'CUSTOMIZE THE KNOBS';
+              case 'faders': return 'CUSTOMIZE THE FADERS';
+              default: return 'CHOOSE A COLOR';
     }
   };
 
@@ -720,9 +804,9 @@ const MixoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
     }, 100);
   }, []);
 
-  const particlesInit = async (main: any) => {
-    await loadFull(main);
-  };
+  // const particlesInit = async (main: any) => {
+  //   await loadFull(main);
+  // };
 
   // Inicialización de Three.js
   useEffect(() => {
@@ -801,31 +885,43 @@ const MixoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
   }, [chosenColors, PALETTES, selectable]);
 
   const menuIcons = [
-    { id: 'normal', icon: 'M12 4.5C7 4.5 2.73 7.61 1 12C2.73 16.39 7 19.5 12 19.5C17 19.5 21.27 16.39 23 12C21.27 7.61 17 4.5 12 4.5M12 17C9.24 17 7 14.76 7 12C7 9.24 9.24 7 12 7C14.76 7 17 9.24 17 12C17 14.76 14.76 17 12 17M12 9C10.34 9 9 10.34 9 12C9 13.66 10.34 15 12 15C13.66 15 15 13.66 15 12C15 10.34 13.66 9 12 9Z', title: 'Vista General' },
-    { id: 'chasis', icon: 'mixo.png', title: 'Chasis', isImage: true },
-    { id: 'buttons', icon: 'M12 1.999c5.524 0 10.002 4.478 10.002 10.002c0 5.523-4.478 10.001-10.002 10.001S1.998 17.524 1.998 12.001C1.998 6.477 6.476 1.999 12 1.999m0 1.5a8.502 8.502 0 1 0 0 17.003A8.502 8.502 0 0 0 12 3.5M11.996 6a5.998 5.998 0 1 1 0 11.996a5.998 5.998 0 0 1 0-11.996', title: 'Botones' },
-    { id: 'knobs', icon: 'M9.42 4.074a.56.56 0 0 0-.56.56v.93c0 .308.252.56.56.56s.56-.252.56-.56v-.93a.56.56 0 0 0-.56-.56M11.554 8.8a.5.5 0 0 1 0 .707l-1.78 1.78a.5.5 0 1 1-.708-.707l1.78-1.78a.5.5 0 0 1 .708 0 M9.42 15.444c-1.16 0-2.32-.44-3.2-1.32a4.527 4.527 0 0 1 0-6.39a4.527 4.527 0 0 1 6.39 0a4.527 4.527 0 0 1 0 6.39c-.88.88-2.03 1.32-3.19 1.32m0-1.1a3.41 3.41 0 1 0 0-6.82a3.41 3.41 0 0 0 0 6.82M6.757 5.2a.56.56 0 1 0-.965.567l.465.809l.005.006a.58.58 0 0 0 .478.262a.53.53 0 0 0 .276-.075a.566.566 0 0 0 .205-.753zm5.315.012a.55.55 0 0 1 .761-.206c.277.152.36.5.203.764l-.458.797a.56.56 0 0 1-.478.277a.564.564 0 0 1-.487-.834zm7.598 5.722a.5.5 0 0 1 .5-.5h2.52a.5.5 0 1 1 0 1h-2.52a.5.5 0 0 1-.5-.5 M22.69 15.454c2.49 0 4.52-2.03 4.52-4.52s-2.03-4.52-4.52-4.52s-4.52 2.03-4.52 4.52s2.03 4.52 4.52 4.52m0-1.11a3.41 3.41 0 1 1 0-6.82a3.41 3.41 0 0 1 0 6.82m-.56-9.7c0-.308.252-.56.56-.56s.56.252.56.56v.945a.566.566 0 0 1-.56.535a.56.56 0 0 1-.56-.56zm-2.103.566a.557.557 0 0 0-.763-.202a.566.566 0 0 0-.204.753l.468.815l.004.006a.58.58 0 0 0 .478.262a.53.53 0 0 0 .276-.075a.566.566 0 0 0 .205-.753zm6.086-.204a.55.55 0 0 0-.761.206l-.458.795a.55.55 0 0 0 .194.759a.5.5 0 0 0 .282.077a.6.6 0 0 0 .478-.261l.005-.007l.463-.805a.55.55 0 0 0-.203-.764 M11.93 22.636H9.42a.5.5 0 0 0 0 1h2.51a.5.5 0 1 0 0-1 M4.9 23.136c0 2.49 2.03 4.52 4.52 4.52s4.52-2.03 4.52-4.52s-2.03-4.52-4.52-4.52s-4.52 2.03-4.52 4.52m7.93 0a3.41 3.41 0 1 1-6.82 0a3.41 3.41 0 0 1 6.82 0m-3.41-6.86a.56.56 0 0 0-.56.56v.93c0 .308.252.56.56.56s.56-.252.56-.56v-.93a.56.56 0 0 0-.56-.56m-3.418.93a.566.566 0 0 1 .755.206l.464.807c.137.258.06.6-.205.753a.53.53 0 0 1-.276.074a.58.58 0 0 1-.478-.261l-.005-.007l-.468-.814a.566.566 0 0 1 .207-.755zm6.08.209a.55.55 0 0 1 .761-.206c.277.151.36.499.203.764l-.462.802a.567.567 0 0 1-.766.194a.55.55 0 0 1-.194-.76zm8.475 3.588a.5.5 0 0 1 .707 0l1.78 1.78a.5.5 0 0 1-.707.707l-1.78-1.78a.5.5 0 0 1 0-.707 M22.69 27.656c-1.16 0-2.32-.44-3.2-1.32a4.527 4.527 0 0 1 0-6.39a4.527 4.527 0 0 1 6.39 0a4.527 4.527 0 0 1 0 6.39c-.88.88-2.04 1.32-3.19 1.32m0-1.11a3.41 3.41 0 1 0 0-6.82a3.41 3.41 0 0 0 0 6.82 M22.13 16.836c0-.308.252-.56.56-.56s.56.252.56.56v.945a.57.57 0 0 1-.56.545a.56.56 0 0 1-.56-.56zm-2.103.576a.566.566 0 0 0-.755-.206l-.006.003a.565.565 0 0 0-.206.755l.468.814l.004.007a.58.58 0 0 0 .478.262a.53.53 0 0 0 .276-.074a.566.566 0 0 0 .205-.753z', title: 'Knobs' },
-    { id: 'faders', icon: 'M3 6h18v2H3V6zm0 5h18v2H3v-2zm0 5h18v2H3v-2z', title: 'Faders' }
+    { id: 'normal', icon: 'M12 4.5C7 4.5 2.73 7.61 1 12C2.73 16.39 7 19.5 12 19.5C17 19.5 21.27 16.39 23 12C21.27 7.61 17 4.5 12 4.5M12 17C9.24 17 7 14.76 7 12C7 9.24 9.24 7 12 7C14.76 7 17 9.24 17 12C17 14.76 14.76 17 12 17M12 9C10.34 9 9 10.34 9 12C9 13.66 10.34 15 12 15C13.66 15 15 13.66 15 12C15 10.34 13.66 9 12 9Z', title: 'Full View - See complete MIDI controller' },
+    { id: 'chasis', icon: 'mixo.png', title: 'Customize Chassis - Change main body color', isImage: true },
+    { id: 'buttons', icon: 'M12 1.999c5.524 0 10.002 4.478 10.002 10.002c0 5.523-4.478 10.001-10.002 10.001S1.998 17.524 1.998 12.001C1.998 6.477 6.476 1.999 12 1.999m0 1.5a8.502 8.502 0 1 0 0 17.003A8.502 8.502 0 0 0 12 3.5M11.996 6a5.998 5.998 0 1 1 0 11.996a5.998 5.998 0 0 1 0-11.996', title: 'Customize Buttons - Change trigger pad colors' },
+    { id: 'knobs', icon: 'M9.42 4.074a.56.56 0 0 0-.56.56v.93c0 .308.252.56.56.56s.56-.252.56-.56v-.93a.56.56 0 0 0-.56-.56M11.554 8.8a.5.5 0 0 1 0 .707l-1.78 1.78a.5.5 0 1 1-.708-.707l1.78-1.78a.5.5 0 0 1 .708 0 M9.42 15.444c-1.16 0-2.32-.44-3.2-1.32a4.527 4.527 0 0 1 0-6.39a4.527 4.527 0 0 1 6.39 0a4.527 4.527 0 0 1 0 6.39c-.88.88-2.03 1.32-3.19 1.32m0-1.1a3.41 3.41 0 1 0 0-6.82a3.41 3.41 0 0 0 0 6.82M6.757 5.2a.56.56 0 1 0-.965.567l.465.809l.005.006a.58.58 0 0 0 .478.262a.53.53 0 0 0 .276-.075a.566.566 0 0 0 .205-.753zm5.315.012a.55.55 0 0 1 .761-.206c.277.152.36.5.203.764l-.458.797a.56.56 0 0 1-.478.277a.564.564 0 0 1-.487-.834zm7.598 5.722a.5.5 0 0 1 .5-.5h2.52a.5.5 0 1 1 0 1h-2.52a.5.5 0 0 1-.5-.5 M22.69 15.454c2.49 0 4.52-2.03 4.52-4.52s-2.03-4.52-4.52-4.52s-4.52 2.03-4.52 4.52s2.03 4.52 4.52 4.52m0-1.11a3.41 3.41 0 1 1 0-6.82a3.41 3.41 0 0 1 0 6.82m-.56-9.7c0-.308.252-.56.56-.56s.56.252.56.56v.945a.566.566 0 0 1-.56.535a.56.56 0 0 1-.56-.56zm-2.103.566a.557.557 0 0 0-.763-.202a.566.566 0 0 0-.204.753l.468.815l.004.006a.58.58 0 0 0 .478.262a.53.53 0 0 0 .276-.075a.566.566 0 0 0 .205-.753zm6.086-.204a.55.55 0 0 0-.761.206l-.458.795a.55.55 0 0 0 .194.759a.5.5 0 0 0 .282.077a.6.6 0 0 0 .478-.261l.005-.007l.463-.805a.55.55 0 0 0-.203-.764 M11.93 22.636H9.42a.5.5 0 0 0 0 1h2.51a.5.5 0 1 0 0-1 M4.9 23.136c0 2.49 2.03 4.52 4.52 4.52s4.52-2.03 4.52-4.52s-2.03-4.52-4.52-4.52s-4.52 2.03-4.52 4.52m7.93 0a3.41 3.41 0 1 1-6.82 0a3.41 3.41 0 0 1 6.82 0m-3.41-6.86a.56.56 0 0 0-.56.56v.93c0 .308.252.56.56.56s.56-.252.56-.56v-.93a.56.56 0 0 0-.56-.56m-3.418.93a.566.566 0 0 1 .755.206l.464.807c.137.258.06.6-.205.753a.53.53 0 0 1-.276.074a.58.58 0 0 1-.478-.261l-.005-.007l-.468-.814a.566.566 0 0 1 .207-.755zm6.08.209a.55.55 0 0 1 .761-.206c.277.151.36.499.203.764l-.462.802a.567.567 0 0 1-.766.194a.55.55 0 0 1-.194-.76zm8.475 3.588a.5.5 0 0 1 .707 0l1.78 1.78a.5.5 0 0 1-.707.707l-1.78-1.78a.5.5 0 0 1 0-.707 M22.69 27.656c-1.16 0-2.32-.44-3.2-1.32a4.527 4.527 0 0 1 0-6.39a4.527 4.527 0 0 1 6.39 0a4.527 4.527 0 0 1 0 6.39c-.88.88-2.04 1.32-3.19 1.32m0-1.11a3.41 3.41 0 1 0 0-6.82a3.41 3.41 0 0 0 0 6.82 M22.13 16.836c0-.308.252-.56.56-.56s.56.252.56.56v.945a.57.57 0 0 1-.56.545a.56.56 0 0 1-.56-.56zm-2.103.576a.566.566 0 0 0-.755-.206l-.006.003a.565.565 0 0 0-.206.755l.468.814l.004.007a.58.58 0 0 0 .478.262a.53.53 0 0 0 .276-.074a.566.566 0 0 0 .205-.753z', title: 'Customize Knobs - Change rotary control colors' },
+    { id: 'faders', icon: 'fader.png', isImage: true, title: 'Customize Faders - Change slider control colors' }
   ];
 
+  // Estado para selección de moneda
+  const [selectedCurrency, setSelectedCurrency] = useState('USD');
+
   const [payuData, setPayuData] = useState({
-    referenceCode: 'controlador123',
-    amount: '185.00',
+    referenceCode: `mixo_${Date.now()}`,
+    amount: '200.00', // Se actualiza según la moneda
     currency: 'USD',
     signature: '',
+    description: 'Mixo Configurator',
+    buyerEmail: 'customer@email.com',
   });
 
+  // Actualizar datos de PayU cuando cambie la moneda
   useEffect(() => {
-    async function updateSignature() {
-      const signature = await getPayuSignature({
-        referenceCode: payuData.referenceCode,
-        amount: payuData.amount,
-        currency: payuData.currency,
-      });
-      setPayuData(prev => ({ ...prev, signature }));
+    const currencyConfig = getMixoCurrencyConfig(selectedCurrency);
+    setPayuData(prev => ({
+      ...prev,
+      amount: currencyConfig.amount,
+      currency: selectedCurrency,
+      description: `Mixo Configurator - ${selectedCurrency} ${currencyConfig.symbol}${currencyConfig.amount}`
+    }));
+  }, [selectedCurrency]);
+
+  // Al abrir el modal de carrito, genera un referenceCode único
+  useEffect(() => {
+    if (showPaymentModal) {
+      const uniqueRef = `mixo-${Date.now()}`;
+      setPayuData(prev => ({ ...prev, referenceCode: uniqueRef }));
     }
-    updateSignature();
-  }, [payuData.referenceCode, payuData.amount, payuData.currency]);
+  }, [showPaymentModal]);
 
   const [sidebarFiles, setSidebarFiles] = useState<File[]>([]);
   const handleSidebarFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -834,90 +930,210 @@ const MixoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
     }
   };
 
-  return (
-    <PayPalScriptProvider options={{ clientId: PAYPAL_CLIENT_ID, currency: "USD" }}>
-      <div className="w-full h-screen bg-black text-gray-200 overflow-hidden relative">
-        <div style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", zIndex: 0, pointerEvents: "none", background: "linear-gradient(120deg,rgb(42, 40, 51) 0%, #00FFF0 60%, #D8D6F2 100%)" }} />
-        <Particles id="tsparticles" init={particlesInit} options={{ fullScreen: { enable: false }, background: { color: { value: "transparent" } }, fpsLimit: 60, particles: { color: { value: "#a259ff" }, links: { enable: true, color: "#a259ff", distance: 120 }, move: { enable: true, speed: 1 }, number: { value: 50 }, opacity: { value: 0.5 }, shape: { type: "circle" }, size: { value: 3 } }, interactivity: { events: { onhover: { enable: true, mode: "repulse" } }, modes: { repulse: { distance: 100, duration: 0.4 } } } }} style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", zIndex: 0, pointerEvents: "none" }} />
-        <div style={{ position: 'fixed', top: 16, left: 6, zIndex: 51, display: 'flex', alignItems: 'center', gap: '12px' }}>
+      return (
+      <PayPalScriptProvider options={{ clientId: PAYPAL_CLIENT_ID, currency: "USD" }}>
+        {/* Pantalla de rotación para móviles */}
+        {!isLandscape && window.innerWidth <= 768 && (
+          <div className="fixed inset-0 z-50 bg-black flex flex-col items-center justify-center text-white text-center p-8">
+            <div className="mb-8">
+              <svg 
+                width="80" 
+                height="80" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                className="mx-auto mb-4 animate-bounce text-cyan-400"
+              >
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                <line x1="8" y1="21" x2="16" y2="21"></line>
+                <line x1="12" y1="17" x2="12" y2="21"></line>
+              </svg>
+            </div>
+            <h2 className="text-2xl font-bold mb-4 text-cyan-400">Rotate your device!</h2>
+            <p className="text-lg mb-2">to use the configurator</p>
+            <p className="text-base opacity-80">Please turn your device to landscape mode</p>
+            <div className="mt-8 flex items-center space-x-2 text-sm opacity-60">
+              <div className="w-8 h-5 border-2 border-current rounded-sm"></div>
+              <span>→</span>
+              <div className="w-5 h-8 border-2 border-current rounded-sm"></div>
+            </div>
+          </div>
+        )}
+
+        {/* Imagen de fondo */}
+        <div 
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            zIndex: -1,
+            backgroundImage: 'url(/textures/fondo.jpg)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            backgroundAttachment: 'fixed'
+          }}
+        />
+        <div className="w-full h-screen text-gray-200 overflow-hidden relative" style={{ background: "transparent" }}>
+        <div style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", zIndex: 0, pointerEvents: "none", background: "transparent" }} />
+        {/* <Particles 
+          id="tsparticles" 
+          init={particlesInit} 
+          options={{
+            fullScreen: { enable: false },
+            background: { color: { value: "transparent" } },
+            fpsLimit: 60,
+            particles: {
+              color: { value: "#a259ff" },
+              links: { enable: true, color: "#a259ff", distance: 120 },
+              move: { enable: true, speed: 1 },
+              number: { value: 50 },
+              opacity: { value: 0.5 },
+              shape: { type: "circle" },
+              size: { value: 3 }
+            },
+            interactivity: {
+              events: {
+                onhover: { enable: true, mode: "repulse" }
+              },
+              modes: {
+                repulse: { distance: 100, duration: 0.4 }
+              }
+            }
+          }}
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            zIndex: 0,
+            pointerEvents: "none"
+          }}
+        /> */}
+        <div 
+          className="fixed top-2 md:top-4 z-50 flex items-center gap-2 md:gap-3"
+          style={{ left: '-20px' }}
+        >
           <button
             onClick={() => window.location.href = 'https://www.crearttech.com/'}
-            className="relative px-5 py-2 rounded-full font-bold text-sm uppercase tracking-wider text-white transition-all duration-300 hover:-translate-y-0.5"
-            style={{
-              background: 'linear-gradient(90deg, rgba(0,255,255,0.18) 0%, rgba(122,0,255,0.18) 50%, rgba(255,0,255,0.18) 100%)',
-              border: '1px solid rgba(0, 255, 255, 0.55)'
-            }}
+            className="relative px-3 md:px-5 py-1 md:py-2 rounded-full font-bold text-xs md:text-sm uppercase tracking-wider text-white transition-all duration-300 hover:-translate-y-0.5 bg-gradient-to-r from-cyan-500/20 via-purple-500/20 to-pink-500/20 border border-cyan-500/55"
           >
             <span className="relative z-10 flex items-center gap-2">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-white">
                 <path d="M3 10.5L12 3l9 7.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
                 <path d="M5 9.5V21h14V9.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
-              <span>Inicio</span>
+                              <span>Home</span>
             </span>
           </button>
         </div>
         <div className="absolute top-6 left-1/2 transform -translate-x-1/2 z-10 flex items-center gap-3">
-          <img src="models/logo.png" alt="Logo" className="h-8 w-auto" />
           <h1 className="text-2xl font-bold leading-none m-0" style={{ fontFamily: 'Gotham Black, Arial, sans-serif', color: '#fff', letterSpacing: '0.04em' }}>MIXO</h1>
         </div>
-        <main className="flex w-full h-full" style={{ minHeight: "100vh", height: "100vh", position: "relative", zIndex: 1, overflow: "hidden" }}>
-          <div className="flex-grow h-full" style={{ position: "relative", zIndex: 1, background: "linear-gradient(180deg,rgb(5, 1, 73) 0%,rgb(82, 2, 46) 100%)" }}>
+        <main className="flex w-full h-full" style={{ minHeight: "100vh", height: "100vh", position: "relative", zIndex: 1, overflow: "hidden", background: "transparent" }}>
+          <div className="flex-grow h-full" style={{ position: "relative", zIndex: 1, background: "transparent" }}>
             <div ref={mountRef} className="w-full h-full transition-all duration-300" onClick={handleCanvasClick} style={{ position: "relative", zIndex: 1 }} />
-            {currentView === 'normal' && (<button onClick={handleOpenPayment} className="fixed bottom-10 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 text-lg font-bold uppercase tracking-wide text-black bg-purple-400 border-none rounded cursor-pointer transition-all duration-200 shadow-lg hover:bg-yellow-200 hover:scale-105 hover:shadow-xl">AÑADIR AL CARRITO</button>)}
+            {currentView === 'normal' && (<button onClick={handleOpenPayment} className="fixed bottom-10 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 text-lg font-bold uppercase tracking-wide text-black bg-purple-400 border-none rounded cursor-pointer transition-all duration-200 shadow-lg hover:bg-yellow-200 hover:scale-105 hover:shadow-xl">ADD TO CART</button>)}
           </div>
         </main>
-                <div className={`fixed top-0 right-0 h-screen border-l border-gray-700 shadow-2xl transition-all duration-400 flex overflow-hidden z-10 ${currentView === 'normal' ? 'w-28' : 'w-[320px]'}`} style={{
-          backgroundColor: 'rgba(0, 0, 0, 0.2)',
-          background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.2) 0%, rgba(26, 26, 26, 0.2) 25%, rgba(10, 10, 10, 0.2) 50%, rgba(26, 26, 26, 0.2) 75%, rgba(0, 0, 0, 0.2) 100%)',
-          boxShadow: '0 0 16px 2px rgba(0, 255, 255, 0.4), -6px 0 16px 0 rgba(0, 255, 255, 0.3), inset 0 0 10px rgba(0,0,0,0.8)',
-          borderLeft: '2px solid rgba(0, 255, 255, 0.8)',
-          backdropFilter: 'blur(10px)',
-          zIndex: 10
-        }}>
-          <div className="w-28 p-4 flex-shrink-0" style={{ paddingTop: '100px' }}>
-            <div className="flex flex-col gap-1.5">
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            width: currentView === 'normal' ? 'clamp(80px, 20vw, 112px)' : 'clamp(300px, 35vw, 360px)',
+            height: '100vh',
+            display: 'flex',
+            zIndex: 10,
+            transition: 'all 0.4s ease',
+            right: window.innerWidth <= 768 ? -35 : -20
+          }}
+          className="mobile-panel"
+        >
+          {/* Columna de controles de vista */}
+          <div 
+            style={{
+              width: 'clamp(60px, 15vw, 112px)',
+              flexShrink: 0,
+              paddingTop: 'clamp(20px, 5vh, 100px)'
+            }}
+          >
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(4px, 1vw, 6px)' }}>
               {menuIcons.map(({ id, icon, title, isImage }) => (
                 <button 
                   key={id} 
                   onClick={() => changeView(id as 'normal' | 'chasis' | 'buttons' | 'knobs' | 'faders')} 
+                  style={{
+                    width: 'clamp(40px, 10vw, 70px)',
+                    height: 'clamp(40px, 10vw, 70px)',
+                    padding: 'clamp(4px, 1vw, 8px)',
+                    aspectRatio: '1 / 1',
+                    border: '2px solid #00FFFF',
+                    borderRadius: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    position: 'relative',
+                    transition: 'all 0.3s ease',
+                    color: 'white',
+                    cursor: 'pointer',
+                    background: currentView === id 
+                      ? 'linear-gradient(to bottom right, #00FFFF, #0080FF)' 
+                      : 'linear-gradient(to bottom right, #000000, #1a1a1a)',
+                    boxShadow: currentView === id ? '0 10px 15px -3px rgba(0, 0, 0, 0.1)' : 'none'
+                  }}
                   onMouseEnter={(e) => {
-                    setMousePosition({ x: e.clientX, y: e.clientY });
-                    if (id === 'chasis') {
-                      setShowChasisTooltip(true);
-                    } else if (id === 'knobs') {
-                      setShowKnobsTooltip(true);
-                    } else if (id === 'faders') {
-                      setShowFadersTooltip(true);
+                    e.currentTarget.style.background = 'linear-gradient(to bottom right, #00FFFF, #0080FF)';
+                    e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1)';
+                    const tooltip = document.createElement('div');
+                    tooltip.className = 'custom-tooltip';
+                    tooltip.textContent = title;
+                    tooltip.style.cssText = `
+                      position: fixed;
+                      left: ${e.clientX - 20}px;
+                      top: ${e.clientY - 20}px;
+                      transform: translateX(-100%);
+                      background: #8503adcc;
+                      color: white;
+                      padding: 12px 16px;
+                      border-radius: 8px;
+                      font-size: 14px;
+                      font-weight: bold;
+                      white-space: nowrap;
+                      z-index: 999999;
+                      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+                      border: 2px solid #f87171;
+                      pointer-events: none;
+                    `;
+                    tooltip.id = 'temp-tooltip';
+                    document.body.appendChild(tooltip);
+                  }}
+                  onMouseLeave={(e) => {
+                    if (currentView !== id) {
+                      e.currentTarget.style.background = 'linear-gradient(to bottom right, #000000, #1a1a1a)';
+                      e.currentTarget.style.boxShadow = 'none';
+                    }
+                    const tooltip = document.getElementById('temp-tooltip');
+                    if (tooltip) {
+                      tooltip.remove();
                     }
                   }}
-                  onMouseLeave={() => {
-                    if (id === 'chasis') {
-                      setShowChasisTooltip(false);
-                    } else if (id === 'knobs') {
-                      setShowKnobsTooltip(false);
-                    } else if (id === 'faders') {
-                      setShowFadersTooltip(false);
-                    }
-                  }}
-                  onMouseMove={(e) => {
-                    setMousePosition({ x: e.clientX, y: e.clientY });
-                  }}
-                                    className={`w-full aspect-square border-2 rounded-lg flex items-center justify-center p-2 transition-all duration-300 text-white relative ${
-                    currentView === id
-                      ? 'bg-gradient-to-br from-[#00FFFF] to-[#0080FF] border-[#00FFFF] shadow-lg'
-                      : 'border-[#00FFFF] bg-gradient-to-br from-[#000000] to-[#1a1a1a] hover:from-[#00FFFF] hover:to-[#0080FF] hover:border-[#00FFFF] hover:shadow-lg'
-                  }`} 
-                  title={title}
                 >
 
                   {isImage ? (
                     <img 
                       src={`textures/${icon}`}
                       alt={title}
-                      className="w-full h-full mx-auto my-auto object-contain"
                       style={{
-                        // Sin filtro para mostrar colores originales
+                        width: 'clamp(20px, 5vw, 40px)',
+                        height: 'clamp(20px, 5vw, 40px)',
+                        objectFit: 'contain',
+                        margin: 'auto',
+                        filter: id === 'faders' ? 'brightness(1.5) contrast(1.3) saturate(1.2) drop-shadow(0 0 6px rgba(0, 255, 255, 0.5))' : 'none',
+                        backgroundColor: id === 'faders' ? 'rgba(0, 0, 0, 0.1)' : 'transparent'
                       }}
                       onError={(e) => {
                         console.error('Error loading image:', e);
@@ -928,7 +1144,13 @@ const MixoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
                     <svg 
                       xmlns="http://www.w3.org/2000/svg" 
                       viewBox={id === 'chasis' ? '0 0 32 32' : id === 'knobs' ? '0 0 32 32' : id === 'faders' ? '0 0 24 24' : '0 0 24 24'}
-                      className="w-4/5 h-4/5 mx-auto my-auto fill-white text-white" 
+                      style={{
+                        width: 'clamp(20px, 5vw, 40px)',
+                        height: 'clamp(20px, 5vw, 40px)',
+                        fill: 'white',
+                        color: 'white',
+                        margin: 'auto'
+                      }}
                       fill="#fff"
                     >
                       <path d={icon} />
@@ -936,18 +1158,130 @@ const MixoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
                   )}
                 </button>
               ))}
-              <input id="sidebar-upload" type="file" accept="image/*,application/pdf" multiple style={{ display: 'none' }} onChange={handleSidebarFileChange} />
-              <button type="button" onClick={() => document.getElementById('sidebar-upload')?.click()} className="w-full aspect-square border-2 rounded-lg flex items-center justify-center p-2 transition-all duration-300 text-white bg-gradient-to-br from-[#000000] to-[#1a1a1a] border-[#00FFFF] hover:from-[#00FFFF] hover:to-[#0080FF] hover:border-[#00FFFF] hover:shadow-lg" title="Subir archivos de personalización"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-4/5 h-4/5 fill-white"><path d="M12 2C13.1 2 14 2.9 14 4V6H16C17.1 6 18 6.9 18 8V19C18 20.1 17.1 21 16 21H8C6.9 21 6 20.1 6 19V8C6 6.9 6.9 6 8 6H10V4C10 2.9 10.9 2 12 2M12 4V6H12.5V4H12M8 8V19H16V8H8M10 10H14V12H10V10M10 14H14V16H10V14Z"/></svg></button>
             </div>
           </div>
-          <div className="flex-1 p-4 flex flex-col">
-            <div className="mt-24 animate-fadeIn">
-              <p className="font-black text-sm tracking-wide uppercase m-0 mb-8 text-gray-200 text-left animate-fadeIn">{getTitle()}</p>
-              <div className="grid grid-cols-2 gap-1 p-1 rounded overflow-x-auto animate-scaleIn">
-                {Object.entries(getCurrentColors()).map(([name, colorData], index) => (<div key={name} className="w-10 h-10 rounded-full cursor-pointer border-2 border-[#a259ff] shadow-[0_0_6px_1px_#a259ff55] transition-all duration-200 shadow-inner hover:scale-110 animate-fadeInUp" style={{ backgroundColor: colorData.hex, animationDelay: `${index * 50}ms` }} title={name} onClick={() => applyColor(name, colorData)} />))}
-              </div>
+
+          {/* Contenido de la UI */}
+          <div 
+            style={{
+              flex: 1,
+              padding: currentView === 'normal' ? 'clamp(4px, 1vw, 8px)' : 'clamp(12px, 2vw, 16px)',
+              display: 'flex',
+              flexDirection: 'column',
+              background: currentView === 'normal' ? 'transparent' : 'rgba(17, 24, 39, 0.65)',
+              borderLeft: currentView === 'normal' ? 'none' : '1px solid #4b5563',
+              backdropFilter: currentView === 'normal' ? undefined : 'blur(6px)',
+              overflowY: currentView === 'normal' ? 'visible' : 'auto'
+            }}
+          >
+            {/* Header - Solo logo en vista normal */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                paddingBottom: 'clamp(12px, 3vw, 20px)',
+                borderBottom: '1px solid #4b5563',
+                paddingLeft: 0,
+                justifyContent: 'center',
+                gap: currentView === 'normal' ? 0 : 'clamp(4px, 1vw, 8px)',
+                minHeight: currentView === 'normal' ? 'clamp(40px, 10vw, 48px)' : 'auto'
+              }}
+            >
+              <img
+                src="models/logo.png"
+                alt="Logo"
+                style={{
+                  height: currentView === 'normal' ? 'clamp(20px, 5vw, 24px)' : 'clamp(28px, 7vw, 32px)',
+                  width: 'auto',
+                  filter: 'drop-shadow(0 0 8px #a259ff) drop-shadow(0 0 16px #0ff)'
+                }}
+              />
             </div>
-            {(selectedButtons.length > 0 || selectedKnobs.length > 0 || selectedFaders.length > 0) && (<div className="mb-6 p-4 bg-gray-800 rounded-lg"><h4 className="text-lg font-semibold text-white mb-2">Selección múltiple ({selectedButtons.length + selectedKnobs.length + selectedFaders.length} elementos)</h4><p className="text-gray-300 text-sm">Haz clic en un color para aplicarlo a todos los elementos seleccionados</p></div>)}
+
+            {/* Sección de colores - solo visible cuando no está en vista normal */}
+            {currentView !== 'normal' && (
+              <div style={{ marginTop: 'clamp(12px, 2.5vw, 20px)' }} className="animate-fadeIn">
+                <p 
+                  style={{
+                    fontWeight: 900,
+                    fontSize: 'clamp(12px, 3vw, 16px)',
+                    letterSpacing: '0.05em',
+                    textTransform: 'uppercase',
+                    margin: '0 0 clamp(10px, 2vw, 14px) 0',
+                    color: '#e5e7eb',
+                    textAlign: 'left'
+                  }}
+                  className="animate-fadeIn"
+                >
+                  {getTitle()}
+                </p>
+                <div 
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+                    gap: 'clamp(8px, 1.5vw, 12px)',
+                    padding: 0,
+                    justifyItems: 'start',
+                  }}
+                  className="animate-scaleIn"
+                >
+                  {Object.entries(getCurrentColors()).map(([name, colorData], index) => (
+                    <div
+                      key={name}
+                      style={{
+                        width: 'clamp(30px, 7vw, 44px)',
+                        height: 'clamp(30px, 7vw, 44px)',
+                        borderRadius: '50%',
+                        cursor: 'pointer',
+                        border: '1px solid #a259ff',
+                        boxShadow: '0 0 6px 1px rgba(162, 89, 255, 0.33)',
+                        transition: 'transform 0.15s ease',
+                        backgroundColor: colorData.hex,
+                        animationDelay: `${index * 40}ms`
+                      }}
+                      title={name}
+                      onClick={() => applyColor(name, colorData)}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'scale(1.07)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'scale(1)';
+                      }}
+                      className="animate-fadeInUp"
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+            {(selectedButtons.length > 0 || selectedKnobs.length > 0 || selectedFaders.length > 0) && (
+              <div 
+                style={{
+                  marginBottom: 'clamp(16px, 4vw, 24px)',
+                  padding: 'clamp(8px, 2vw, 16px)',
+                  background: '#1f2937',
+                  borderRadius: '8px'
+                }}
+              >
+                <h4 
+                  style={{
+                    fontSize: 'clamp(12px, 3vw, 18px)',
+                    fontWeight: 600,
+                    color: 'white',
+                    marginBottom: 'clamp(4px, 1vw, 8px)'
+                  }}
+                >
+                  Selección múltiple ({selectedButtons.length + selectedKnobs.length + selectedFaders.length} elementos)
+                </h4>
+                <p 
+                  style={{
+                    color: '#d1d5db',
+                    fontSize: 'clamp(10px, 2vw, 14px)'
+                  }}
+                >
+                  Haz clic en un color para aplicarlo a todos los elementos seleccionados
+                </p>
+              </div>
+            )}
           </div>
         </div>
         
@@ -998,69 +1332,62 @@ const MixoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
             <div className="relative bg-[#3a4060] rounded-2xl shadow-2xl border-2 border-[#a259ff] p-4 md:py-4 md:px-8 w-full max-w-4xl mx-4 animate-fade-in">
               <button onClick={() => setShowPaymentModal(false)} className="absolute top-3 right-3 text-gray-400 hover:text-pink-400 text-2xl font-bold">×</button>
-              <h2 className="text-3xl md:text-4xl font-bold text-purple-400 mb-4 text-center tracking-widest">PAGO SEGURO</h2>
+              <h2 className="text-3xl md:text-4xl font-bold text-purple-400 mb-4 text-center tracking-widest">PAGO SEGURO - MIXO</h2>
               <div className="flex flex-col md:flex-row gap-4 items-center mb-4">
                 <div className="w-full max-w-[320px] md:max-w-[380px] aspect-[4/3] flex items-center justify-center ml-16 md:ml-24">
-                  {screenshot && (<img src={screenshot} alt="Controlador personalizado" className="w-full h-full object-contain" style={{ background: 'none', boxShadow: 'none', border: 'none' }} />)}
+                  {screenshot && (<img src={screenshot} alt="Custom controller" className="w-full h-full object-contain" style={{ background: 'none', boxShadow: 'none', border: 'none' }} />)}
                 </div>
                 <div className="flex-1 mt-8 md:mt-0">
                   <h3 className="text-xl font-semibold mb-2 text-cyan-400">Tu configuración:</h3>
                   <ul className="text-base space-y-1">
                     <li><b>Chasis:</b> {chosenColors.chasis}</li>
-                    <li><b>Botones:</b> {Object.values(chosenColors.buttons).join(', ') || 'Por defecto'}</li>
-                    <li><b>Perillas:</b> {Object.values(chosenColors.knobs).join(', ') || 'Por defecto'}</li>
-                    <li><b>Faders:</b> {Object.values(chosenColors.faders).join(', ') || 'Por defecto'}</li>
+                    <li><b>Buttons:</b> {Object.values(chosenColors.buttons).join(', ') || 'Default'}</li>
+                    <li><b>Knobs:</b> {Object.values(chosenColors.knobs).join(', ') || 'Default'}</li>
+                    <li><b>Faders:</b> {Object.values(chosenColors.faders).join(', ') || 'Default'}</li>
                   </ul>
                 </div>
               </div>
-              <div className="flex flex-col gap-4 mt-4">
-                {/* CORRECCIÓN DE SEGURIDAD APLICADA AQUÍ */}
-                <PayPalButtons
-                  style={{ layout: "horizontal", color: "blue", shape: "rect", label: "paypal", height: 48 }}
-                  createOrder={createPaypalOrderOnServer}
-                  onApprove={async (data) => {
-                      const isVerified = await verifyPaypalPaymentOnServer(data.orderID);
-                      if (isVerified) {
-                          alert("¡Pago verificado y completado!");
-                          setShowPaymentModal(false);
-                          // Aquí puedes proceder a enviar el correo de confirmación
-                      }
-                  }}
-                  onError={(err) => {
-                    alert("Error en el pago con PayPal: " + err);
-                  }}
-                />
-                {/* AVISO DE SEGURIDAD: Este formulario aún usa valores del cliente.
-                    Para máxima seguridad, estos valores también deberían ser
-                    generados y firmados por el servidor. */}
-                <form action="https://sandbox.checkout.payulatam.com/ppp-web-gateway-payu/" method="post" target="_blank" className="w-full flex flex-col items-center"
-                  onSubmit={async (e) => {
-                    try {
-                      await fetch('http://localhost:4000/api/sendgrid-mail', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ colors: chosenColors, screenshot, paymentMethod: 'PayU' })
-                      });
-                    } catch (err) {
-                      alert('Error enviando correo de pedido con SendGrid: ' + err);
-                    }
-                  }}
+            {/* Selector de moneda */}
+            <div className="mb-6">
+                              <h3 className="text-lg font-semibold mb-3 text-cyan-400">Select your currency:</h3>
+              <div className="flex gap-4 justify-center">
+                <button
+                  onClick={() => setSelectedCurrency('USD')}
+                  className={`px-6 py-3 rounded-lg font-bold text-lg transition-all ${
+                    selectedCurrency === 'USD'
+                      ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-[0_0_12px_2px_#3b82f6]'
+                      : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
+                  }`}
                 >
-                  <input type="hidden" name="merchantId" value="508029" />
-                  <input type="hidden" name="accountId" value="512321" />
-                  <input type="hidden" name="description" value="Controlador MIDI personalizado" />
-                  <input type="hidden" name="referenceCode" value={payuReference} />
-                  <input type="hidden" name="amount" value="185.00" />
-                  <input type="hidden" name="tax" value="0" />
-                  <input type="hidden" name="taxReturnBase" value="0" />
-                  <input type="hidden" name="currency" value="USD" />
-                  <input type="hidden" name="signature" value={payuSignature} />
-                  <input type="hidden" name="test" value="1" />
-                  <input type="hidden" name="buyerEmail" value="test@test.com" />
-                  <input type="hidden" name="responseUrl" value="https://www.crearttech.com/" />
-                  <input type="hidden" name="confirmationUrl" value="https://www.crearttech.com/" />
-                  <button type="submit" className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg transition-all duration-200 hover:scale-105 shadow-lg">Pagar con PayU</button>
-                </form>
+                  USD $200.00
+                </button>
+                <button
+                  onClick={() => setSelectedCurrency('COP')}
+                  className={`px-6 py-3 rounded-lg font-bold text-lg transition-all ${
+                    selectedCurrency === 'COP'
+                      ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-[0_0_12px_2px_#3b82f6]'
+                      : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
+                  }`}
+                >
+                  COP $800,000
+                </button>
+              </div>
+              <p className="text-center text-sm text-gray-400 mt-2">
+                Selected price: {selectedCurrency} {getMixoCurrencyConfig(selectedCurrency).symbol}{getMixoCurrencyConfig(selectedCurrency).amount}
+              </p>
+            </div>
+
+              <div className="flex flex-col gap-4 mt-4">
+                              {/* PayPal temporarily disabled - only PayU available */}
+                <div className="w-full py-3 rounded-lg bg-gray-600 text-gray-400 font-bold text-lg text-center">
+                  PayPal temporarily unavailable
+                </div>
+                <button
+                  onClick={handlePayUCheckoutLocal}
+                  className="w-full py-3 rounded-lg bg-gradient-to-r from-green-400 to-cyan-400 text-white font-bold text-lg shadow-[0_0_12px_2px_#0ff580] hover:scale-105 transition-all mt-2"
+                >
+                  Pay with PayU ({selectedCurrency} {getMixoCurrencyConfig(selectedCurrency).symbol}{getMixoCurrencyConfig(selectedCurrency).amount})
+              </button>
               </div>
             </div>
           </div>
