@@ -38,7 +38,10 @@ const LoopoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo
   const [currentView, setCurrentView] = useState<'normal' | 'chasis' | 'knobs'>('normal');
   const [selectedForColoring, setSelectedForColoring] = useState<THREE.Mesh | null>(null);
   const [isLandscape, setIsLandscape] = useState(false);
+<<<<<<< HEAD
   const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 768);
+=======
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
   
   // ==================================================================
   // DETECCIÓN DE ORIENTACIÓN
@@ -47,6 +50,7 @@ const LoopoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo
     const checkOrientation = () => {
       setIsLandscape(window.innerWidth > window.innerHeight);
     };
+<<<<<<< HEAD
     const checkMobile = () => {
       setIsMobile(window.innerWidth <= 768);
     };
@@ -57,12 +61,21 @@ const LoopoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo
     window.addEventListener('orientationchange', checkOrientation);
     window.addEventListener('resize', checkMobile);
     window.addEventListener('orientationchange', checkMobile);
+=======
+    
+    checkOrientation();
+    window.addEventListener('resize', checkOrientation);
+    window.addEventListener('orientationchange', checkOrientation);
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
     
     return () => {
       window.removeEventListener('resize', checkOrientation);
       window.removeEventListener('orientationchange', checkOrientation);
+<<<<<<< HEAD
       window.removeEventListener('resize', checkMobile);
       window.removeEventListener('orientationchange', checkMobile);
+=======
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
     };
   }, []);
   
@@ -83,6 +96,7 @@ const LoopoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo
   });
   const [selectable, setSelectable] = useState<Selectable>({ chasis: [], knobs: [] });
   const [screenshot, setScreenshot] = useState<string | null>(null);
+<<<<<<< HEAD
   // Multi-selección de knobs y helper de glow (declarados aquí para uso posterior)
   const [selectedKnobs, setSelectedKnobs] = useState<THREE.Mesh[]>([]);
   const setEmissive = useCallback((object: THREE.Mesh | null, color: number = 0x000000) => {
@@ -90,6 +104,8 @@ const LoopoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo
       (object.material as THREE.MeshStandardMaterial).emissive.setHex(color);
     }
   }, []);
+=======
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
 
   // Eliminado: estado/efectos de pagos y moneda
 
@@ -196,12 +212,17 @@ const LoopoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo
   // Preparar partes del modelo
   const prepareModelParts = useCallback((model: THREE.Group) => {
     const newSelectable: Selectable = { chasis: [], knobs: [] };
+<<<<<<< HEAD
     // Cargar configuración previa si existe
     let initialChosen: ChosenColors = {
+=======
+    const newChosenColors: ChosenColors = {
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
       type: 'configUpdate',
       chasis: 'Gris',
       knobs: {}
     };
+<<<<<<< HEAD
     try {
       const saved = localStorage.getItem('loopo_chosenColors');
       if (saved) {
@@ -217,6 +238,8 @@ const LoopoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo
     } catch (e) {
       console.warn('Could not parse saved loopo_chosenColors', e);
     }
+=======
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
 
     model.traverse((child: THREE.Object3D) => {
       if (!(child instanceof THREE.Mesh)) return;
@@ -226,14 +249,22 @@ const LoopoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo
 
       if (meshName.includes('cubechasis')) {
         child.material = new THREE.MeshPhysicalMaterial({ 
+<<<<<<< HEAD
           color: PALETTES.chasis[initialChosen.chasis] ? PALETTES.chasis[initialChosen.chasis].hex : PALETTES.chasis['Gris'].hex, 
+=======
+          color: PALETTES.chasis['Gris'].hex, 
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
           metalness: 0.8,
           roughness: 0.35,
           clearcoat: 0.85,
           clearcoatRoughness: 0.1
         });
         newSelectable.chasis.push(child);
+<<<<<<< HEAD
         initialChosen.chasis = initialChosen.chasis || 'Gris';
+=======
+        newChosenColors.chasis = 'Gris';
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
       }
       else if (meshName.includes('aro')) {
         child.material = new THREE.MeshPhysicalMaterial({ color: 0x000000, metalness: 0.0, roughness: 0.2, clearcoat: 0.8, clearcoatRoughness: 0.1, reflectivity: 0.5, transmission: 0.3, thickness: 0.5, ior: 1.4, attenuationDistance: 1.0, attenuationColor: 0xffffff, transparent: true, opacity: 0.7 });
@@ -245,15 +276,23 @@ const LoopoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo
           const mat = child.material as THREE.MeshStandardMaterial;
           const lightness = (mat.color.r + mat.color.g + mat.color.b) / 3;
           if (lightness < 0.5) {
+<<<<<<< HEAD
             const savedName = initialChosen.knobs[child.name];
             const defaultColor = savedName && PALETTES.knobs[savedName] ? savedName : 'Negro';
+=======
+            const defaultColor = 'Negro';
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
             child.material = new THREE.MeshStandardMaterial({ 
               color: PALETTES.knobs[defaultColor].hex, 
               metalness: 0, 
               roughness: 1 
             });
             newSelectable.knobs.push(child);
+<<<<<<< HEAD
             initialChosen.knobs[child.name] = defaultColor;
+=======
+            newChosenColors.knobs[child.name] = defaultColor;
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
           } else {
             child.material = new THREE.MeshStandardMaterial({ color: 0xffffff });
           }
@@ -262,8 +301,12 @@ const LoopoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo
     });
 
     setSelectable(newSelectable);
+<<<<<<< HEAD
     // Preservar las elecciones previas
     setChosenColors(initialChosen);
+=======
+    setChosenColors(newChosenColors);
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
   }, []);
 
   // Cargar modelo
@@ -272,7 +315,11 @@ const LoopoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo
       const { GLTFLoader } = await import('three/examples/jsm/loaders/GLTFLoader.js');
       const loader = new GLTFLoader();
       
+<<<<<<< HEAD
       loader.load(`${import.meta.env.BASE_URL}models/loopo.glb`, (gltf: any) => {
+=======
+      loader.load('./models/loopo.glb', (gltf: any) => {
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
         console.log('LoopoConfigurator: Model loaded successfully');
         const model = gltf.scene as THREE.Group;
         modelRef.current = model;
@@ -437,6 +484,7 @@ const LoopoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo
       setSelectedForColoring(null);
     }
 
+<<<<<<< HEAD
     // Limpiar selección y glow al volver a vista normal
     if (view === 'normal') {
       if (selectedForColoring) setEmissive(selectedForColoring, 0x000000);
@@ -445,6 +493,8 @@ const LoopoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo
       setSelectedForColoring(null);
     }
 
+=======
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
     if (!cameraRef.current || !controlsRef.current) return;
 
     let targetView;
@@ -470,7 +520,11 @@ const LoopoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo
       ...targetView.target, 
       onUpdate: () => controlsRef.current.update() 
     });
+<<<<<<< HEAD
   }, [selectable, selectedForColoring, selectedKnobs, setEmissive]);
+=======
+  }, [selectable]);
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
 
   // Función para cambiar color
   const changeColor = useCallback((colorName: string) => {
@@ -534,6 +588,7 @@ const LoopoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo
     const intersects = raycaster.intersectObjects(objectsToIntersect, false);
     
     if (intersects.length > 0) {
+<<<<<<< HEAD
       const hit = intersects[0].object as THREE.Mesh;
       if (currentView === 'normal') return;
 
@@ -556,6 +611,14 @@ const LoopoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo
       setSelectedKnobs([]);
     }
   }, [currentView, selectable, setEmissive]);
+=======
+      const selectedObject = intersects[0].object as THREE.Mesh;
+      setSelectedForColoring(selectedObject);
+    } else {
+      setSelectedForColoring(null);
+    }
+  }, [currentView, selectable]);
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
 
   // Función para obtener título
   const getTitle = () => {
@@ -577,8 +640,11 @@ const LoopoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo
     return PALETTES.chasis; // Por defecto
   };
 
+<<<<<<< HEAD
   // Estado de selección múltiple y helper de glow (duplicado eliminado; declarado antes en el archivo)
 
+=======
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
   // Función para aplicar color
   const applyColor = useCallback((name: string, colorData: PaletteColor) => {
     if (currentView === 'chasis') {
@@ -588,6 +654,7 @@ const LoopoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo
           (mesh.material as THREE.MeshStandardMaterial).color.setHex(parseInt(colorData.hex.replace('#', ''), 16));
         }
       });
+<<<<<<< HEAD
     } else if (currentView === 'knobs' && selectedKnobs.length > 0) {
       const newChosen = { ...chosenColors, knobs: { ...chosenColors.knobs } };
       selectedKnobs.forEach(knob => {
@@ -601,10 +668,19 @@ const LoopoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo
       setSelectedKnobs([]);
     } else if (currentView === 'knobs' && selectedForColoring) {
       setChosenColors(prev => ({ ...prev, knobs: { ...prev.knobs, [selectedForColoring.name]: name } }));
+=======
+    } else if (currentView === 'knobs' && selectedForColoring) {
+      setChosenColors(prev => ({
+        ...prev,
+        knobs: { ...prev.knobs, [selectedForColoring.name]: name }
+      }));
+      // Aplicar color al knob seleccionado
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
       if (selectedForColoring.material && 'color' in selectedForColoring.material) {
         (selectedForColoring.material as THREE.MeshStandardMaterial).color.setHex(parseInt(colorData.hex.replace('#', ''), 16));
       }
     }
+<<<<<<< HEAD
   }, [currentView, selectable, selectedForColoring, selectedKnobs, chosenColors, setEmissive]);
 
   // Capturar screenshot siempre en vista por defecto
@@ -735,6 +811,82 @@ const LoopoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo
   }, [chosenColors, getScreenshotDefaultView]);
 
   // Checkout eliminado: flujo reemplazado por modal + mailto
+=======
+  }, [currentView, selectable, selectedForColoring]);
+
+  // Función para abrir modal de pago
+  const handleOpenPayment = useCallback(() => {
+    const emailDestino = 'tu-email-de-negocio@ejemplo.com';
+    const asunto = 'Configuración de Loopo';
+    const body = `\nHola,\n\nEsta es mi configuración para el Loopo:\n\n- Chasis: ${chosenColors.chasis}\n- Knobs: ${Object.values(chosenColors.knobs).join(', ') || 'Default'}\n\n(Adjunto también los datos en formato JSON para precisión: ${JSON.stringify(chosenColors)})\n\n¡Gracias!\n`;
+    const link = `mailto:${emailDestino}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(body)}`;
+    window.location.href = link;
+  }, [chosenColors]);
+
+  // Función para manejar el checkout de PayU localmente
+  const handlePayUCheckoutLocal = () => {
+    const popupTarget = 'payu_checkout';
+    let popupRef = window.open('', popupTarget);
+    
+    if (!popupRef) {
+      alert('Please allow popups to continue with payment');
+      return;
+    }
+
+    // Obtener configuración de la moneda seleccionada
+    const currencyConfig = getLoopoCurrencyConfig(selectedCurrency);
+    
+    // Generar firma localmente
+    const signatureString = `${PAYU_CONFIG.API_KEY}~${PAYU_CONFIG.MERCHANT_ID}~${payuData.referenceCode}~${currencyConfig.amount}~${selectedCurrency}`;
+    const signature = MD5(signatureString).toString();
+
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = currencyConfig.url;
+    form.target = popupTarget;
+
+    const formData = {
+      merchantId: PAYU_CONFIG.MERCHANT_ID,
+      accountId: currencyConfig.accountId,
+      description: `Loopo Configurator - ${selectedCurrency} ${currencyConfig.symbol}${currencyConfig.amount}`,
+      referenceCode: payuData.referenceCode,
+      amount: currencyConfig.amount,
+      currency: selectedCurrency,
+      buyerEmail: payuData.buyerEmail,
+      signature: signature,
+      test: PAYU_CONFIG.TEST_MODE ? '1' : '0',
+      confirmationUrl: PAYU_CONFIG.CONFIRMATION_URL,
+      responseUrl: PAYU_CONFIG.RESPONSE_URL,
+      // Parámetros para forzar moneda y país
+      lng: currencyConfig.language,
+      // Datos del modal para el webhook
+      extra1: 'Loopo',
+      extra2: chosenColors.chasis || 'Custom',
+      extra3: `Applied colors - Knobs: ${Object.keys(chosenColors.knobs || {}).length}`,
+      extra4: `Loopo Configurator - ${selectedCurrency} ${currencyConfig.symbol}${currencyConfig.amount}`,
+      // Additional parameters for PayU
+      payerCountry: 'CO',
+      payerCity: 'Bogota',
+      payerPhone: '+57-300-1234567',
+      // Forzar configuración regional
+      country: 'CO',
+      // Evitar detección automática de ubicación
+      ipAddress: '8.8.4.4'
+    };
+
+    Object.entries(formData).forEach(([key, value]) => {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = key;
+      input.value = value;
+      form.appendChild(input);
+    });
+
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+  };
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
 
   const menuIcons = [
     { id: 'normal', icon: 'M12 4.5C7 4.5 2.73 7.61 1 12C2.73 16.39 7 19.5 12 19.5C17 19.5 21.27 16.39 23 12C21.27 7.61 17 4.5 12 4.5M12 17C9.24 17 7 14.76 7 12C7 9.24 9.24 7 12 7C14.76 7 17 9.24 17 12C17 14.76 14.76 17 12 17M12 9C10.34 9 9 10.34 9 12C9 13.66 10.34 15 12 15C13.66 15 15 13.66 15 12C15 10.34 13.66 9 12 9Z', title: 'Full View - See complete MIDI controller' },
@@ -787,7 +939,11 @@ const LoopoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo
             width: '100vw',
             height: '100vh',
             zIndex: -1,
+<<<<<<< HEAD
             backgroundImage: `url(${import.meta.env.BASE_URL}textures/fondo.jpg)`,
+=======
+            backgroundImage: 'url(/textures/fondo.jpg)',
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             backgroundRepeat: 'no-repeat',
@@ -891,11 +1047,16 @@ const LoopoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo
           </div>
         </main>
 
+<<<<<<< HEAD
         {/* Panel de UI (alineado a Beato16) */}
+=======
+        {/* Panel de UI */}
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
         <div
           style={{
             position: 'fixed',
             top: 0,
+<<<<<<< HEAD
             width: currentView === 'normal' ? 'clamp(80px, 20vw, 112px)' : 'clamp(300px, 35vw, 360px)',
             height: '100vh',
             display: 'flex',
@@ -904,6 +1065,15 @@ const LoopoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo
             right: isMobile ? -35 : -20
           }}
           className="mobile-panel"
+=======
+            width: currentView === 'normal' ? 'clamp(80px, 20vw, 112px)' : 'clamp(280px, 70vw, 320px)',
+            height: '100vh',
+            display: 'flex',
+            zIndex: 10,
+            transition: 'all 0.4s ease'
+          }}
+          className="mobile-panel right-[-35px] md:right-[-20px]"
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
         >
 
           {/* Columna de controles de vista */}
@@ -984,7 +1154,11 @@ const LoopoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo
                 >
                   {isImage ? (
                     <img 
+<<<<<<< HEAD
                       src={`${import.meta.env.BASE_URL}textures/${icon}`}
+=======
+                      src={`textures/${icon}`}
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
                       alt={title}
                       style={{
                         width: 'clamp(20px, 5vw, 40px)',
@@ -994,7 +1168,11 @@ const LoopoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo
                       }}
                       onError={(e) => {
                         console.error('Error loading image:', e);
+<<<<<<< HEAD
                         console.log('Attempted to load:', `${import.meta.env.BASE_URL}textures/${icon}`);
+=======
+                        console.log('Attempted to load:', `textures/${icon}`);
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
                       }}
                     />
                   ) : (
@@ -1018,6 +1196,7 @@ const LoopoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo
             </div>
           </div>
 
+<<<<<<< HEAD
           {/* Contenido de la UI (fondo/borde/padding como Beato16) */}
           <div 
             style={{
@@ -1029,6 +1208,15 @@ const LoopoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo
               borderLeft: currentView === 'normal' ? 'none' : '1px solid #4b5563',
               backdropFilter: currentView === 'normal' ? undefined : 'blur(6px)',
               overflowY: currentView === 'normal' ? 'visible' : 'auto'
+=======
+          {/* Contenido de la UI */}
+          <div 
+            style={{
+              flex: 1,
+              padding: 'clamp(4px, 1vw, 8px)',
+              display: 'flex',
+              flexDirection: 'column'
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
             }}
           >
             {/* Header - Solo logo en vista normal */}
@@ -1045,7 +1233,11 @@ const LoopoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo
               }}
             >
               <img
+<<<<<<< HEAD
                 src={`${import.meta.env.BASE_URL}models/logo.png`}
+=======
+                src="models/logo.png"
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
                 alt="Logo"
                 style={{
                   height: currentView === 'normal' ? 'clamp(20px, 5vw, 24px)' : 'clamp(28px, 7vw, 32px)',
@@ -1055,6 +1247,7 @@ const LoopoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo
               />
             </div>
 
+<<<<<<< HEAD
             {/* Sección de colores - igual a Beato16 (2 columnas y márgenes responsive) */}
             {currentView !== 'normal' && (
               <div style={{ marginTop: 'clamp(12px, 2.5vw, 20px)' }} className="animate-fadeIn">
@@ -1065,6 +1258,18 @@ const LoopoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo
                     letterSpacing: '0.05em',
                     textTransform: 'uppercase',
                     margin: '0 0 clamp(10px, 2vw, 14px) 0',
+=======
+            {/* Sección de colores - solo visible cuando no está en vista normal */}
+            {currentView !== 'normal' && (
+              <div style={{ marginTop: 'clamp(16px, 4vw, 24px)' }} className="animate-fadeIn">
+                <p 
+                  style={{
+                    fontWeight: 900,
+                    fontSize: 'clamp(10px, 2.5vw, 14px)',
+                    letterSpacing: '0.05em',
+                    textTransform: 'uppercase',
+                    margin: '0 0 clamp(8px, 2vw, 12px) 0',
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
                     color: '#e5e7eb',
                     textAlign: 'left'
                   }}
@@ -1075,6 +1280,7 @@ const LoopoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo
                 <div 
                   style={{
                     display: 'grid',
+<<<<<<< HEAD
                     gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
                     rowGap: '5px',
                     columnGap: '0px',
@@ -1083,6 +1289,13 @@ const LoopoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo
                     marginLeft: isMobile ? '-24px' : '35px',
                     transform: isMobile ? 'translateX(-36px)' : 'none',
                     transition: 'transform 150ms ease'
+=======
+                    gridTemplateColumns: 'repeat(2, 1fr)',
+                    gap: 'clamp(4px, 1vw, 6px)',
+                    padding: 0,
+                    justifyItems: 'end',
+                    marginLeft: 'auto'
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
                   }}
                   className="animate-scaleIn"
                 >
@@ -1090,21 +1303,36 @@ const LoopoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo
                     <div
                       key={name}
                       style={{
+<<<<<<< HEAD
                         width: 'clamp(30px, 7vw, 44px)',
                         height: 'clamp(30px, 7vw, 44px)',
+=======
+                        width: 'clamp(32px, 8vw, 40px)',
+                        height: 'clamp(32px, 8vw, 40px)',
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
                         borderRadius: '50%',
                         cursor: 'pointer',
                         border: '1px solid #a259ff',
                         boxShadow: '0 0 6px 1px rgba(162, 89, 255, 0.33)',
+<<<<<<< HEAD
                         transition: 'transform 0.15s ease, margin-left 0.15s ease',
                         backgroundColor: colorData.hex,
                         animationDelay: `${index * 40}ms`,
                         marginLeft: '0px'
+=======
+                        transition: 'all 0.2s ease',
+                        backgroundColor: colorData.hex,
+                        animationDelay: `${index * 50}ms`
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
                       }}
                       title={name}
                       onClick={() => applyColor(name, colorData)}
                       onMouseEnter={(e) => {
+<<<<<<< HEAD
                         e.currentTarget.style.transform = 'scale(1.07)';
+=======
+                        e.currentTarget.style.transform = 'scale(1.1)';
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
                       }}
                       onMouseLeave={(e) => {
                         e.currentTarget.style.transform = 'scale(1)';
@@ -1152,6 +1380,7 @@ const LoopoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo
           </div>
         </div>
 
+<<<<<<< HEAD
         {/* Botón de finalizar (solo visible en vista normal) */}
         {currentView === 'normal' && (
           <button 
@@ -1163,6 +1392,19 @@ const LoopoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo
         )}
 
         {/* Flujo de pago eliminado: ahora se usa modal + mailto */}
+=======
+        {/* Botón de comprar (solo visible en vista normal) */}
+        {currentView === 'normal' && (
+          <button 
+            onClick={handleOpenPayment}
+            className="fixed bottom-10 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 text-lg font-bold uppercase tracking-wide text-black bg-purple-400 border-none rounded cursor-pointer transition-all duración-200 shadow-lg hover:bg-yellow-200 hover:scale-105 hover:shadow-xl shadow-[0_0_8px_2px_#a259ff80,0_0_16px_4px_#0ff5]"
+          >
+            Finalizar y Enviar Configuración
+          </button>
+        )}
+
+        {/* Flujo de pago eliminado: ahora se usa mailto */}
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
       </div>
     </div>
   );

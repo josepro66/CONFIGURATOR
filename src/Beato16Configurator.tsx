@@ -108,6 +108,7 @@ const Beato16Configurator: React.FC = () => {
   // ==================================================================
   // INICIO DE LA CORRECCIÓN DE SEGURIDAD
   // ==================================================================
+<<<<<<< HEAD
   // Capturar screenshot del canvas
   const getScreenshot = useCallback(() => {
     if (!rendererRef.current) return null;
@@ -220,6 +221,18 @@ const Beato16Configurator: React.FC = () => {
       window.location.href = mailtoLink;
     }
   }, [chosenColors, getScreenshot]);
+=======
+  const handleAddToCart = useCallback(async () => {
+    // (Opcional) Captura de pantalla eliminada del flujo por email
+
+    const emailDestino = 'tu-email-de-negocio@ejemplo.com';
+    const asunto = 'Configuración de Beato16';
+    const colorSummary = `\nHola,\n\nEsta es mi configuración para el Beato16:\n\n- Chasis: ${chosenColors.chasis}\n- Botones: ${Object.values(chosenColors.buttons).join(', ') || 'Default'}\n- Knobs: ${Object.values(chosenColors.knobs).join(', ') || 'Default'}\n- Teclas: ${Object.values(chosenColors.teclas).join(', ') || 'Default'}\n- Faders: ${Object.values(chosenColors.faders).join(', ') || 'Default'}\n\n(Adjunto también los datos en formato JSON para precisión: ${JSON.stringify(chosenColors)})\n\n¡Gracias!\n`;
+
+    const mailtoLink = `mailto:${emailDestino}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(colorSummary)}`;
+    window.location.href = mailtoLink;
+  }, [chosenColors]);
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
   // ==================================================================
   // FIN DE LA CORRECCIÓN DE SEGURIDAD
   // ==================================================================
@@ -262,6 +275,7 @@ const Beato16Configurator: React.FC = () => {
   // 3. Al cargar el modelo, aplicar el envMap y MeshPhysicalMaterial
   const prepareModelParts = useCallback((model: THREE.Group) => {
     const newSelectable: Selectable = { chasis: [], buttons: [], knobs: [], teclas: [], faders: [] };
+<<<<<<< HEAD
     // Load previously saved choices if available
     let initialChosen: ChosenColors = { type: 'configUpdate', chasis: 'Gris', buttons: {}, knobs: {}, teclas: {}, faders: {} };
     try {
@@ -282,6 +296,11 @@ const Beato16Configurator: React.FC = () => {
     } catch (e) {
       console.warn('Could not parse saved beato16_chosenColors', e);
     }
+=======
+    const newChosenColors: ChosenColors = {
+      type: 'configUpdate', chasis: 'Gris', buttons: {}, knobs: {}, teclas: {}, faders: {}
+    };
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
 
     model.traverse((child: THREE.Object3D) => {
       if (!(child instanceof THREE.Mesh)) return;
@@ -297,15 +316,21 @@ const Beato16Configurator: React.FC = () => {
       }
 
       if (meshName.includes('cubechasis')) {
+<<<<<<< HEAD
         const chasisName = initialChosen.chasis && PALETTES.chasis[initialChosen.chasis] ? initialChosen.chasis : 'Gris';
         child.material = new THREE.MeshPhysicalMaterial({ 
           color: PALETTES.chasis[chasisName].hex, 
+=======
+        child.material = new THREE.MeshPhysicalMaterial({ 
+          color: PALETTES.chasis['Gris'].hex, 
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
           metalness: 0.8, 
           roughness: 0.35,
           clearcoat: 0.85,
           clearcoatRoughness: 0.1
         });
         newSelectable.chasis.push(child);
+<<<<<<< HEAD
         initialChosen.chasis = chasisName;
       }
       else if (meshName.includes('boton')) {
@@ -314,6 +339,15 @@ const Beato16Configurator: React.FC = () => {
         child.material = new THREE.MeshPhysicalMaterial({ color: PALETTES.buttons[defaultColor].hex, metalness: 0.4, roughness: 0.68, clearcoat: 0.85, clearcoatRoughness: 0.08, reflectivity: 0.3, sheen: 0.5, sheenColor: 0x1C1C1C });
         newSelectable.buttons.push(child);
         initialChosen.buttons[child.name] = defaultColor;
+=======
+        newChosenColors.chasis = 'Gris';
+      }
+      else if (meshName.includes('boton')) {
+        const defaultColor = 'Negro';
+        child.material = new THREE.MeshPhysicalMaterial({ color: PALETTES.buttons[defaultColor].hex, metalness: 0.4, roughness: 0.68, clearcoat: 0.85, clearcoatRoughness: 0.08, reflectivity: 0.3, sheen: 0.5, sheenColor: 0x1C1C1C });
+        newSelectable.buttons.push(child);
+        newChosenColors.buttons[child.name] = defaultColor;
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
       }
       else if (meshName.includes('aro') || (meshName.includes('fader') && (meshName.includes('ring') || meshName.includes('circle')))) {
         console.log('Aro de fader configurado en prepareModelParts Beato16:', child.name);
@@ -340,42 +374,70 @@ const Beato16Configurator: React.FC = () => {
           const mat = child.material as THREE.MeshStandardMaterial;
           const lightness = (mat.color.r + mat.color.g + mat.color.b) / 3;
           if (lightness < 0.5) {
+<<<<<<< HEAD
             const savedName = initialChosen.knobs[child.name];
             const defaultColor = savedName && PALETTES.knobs[savedName] ? savedName : 'Negro';
             child.material = new THREE.MeshStandardMaterial({ color: PALETTES.knobs[defaultColor].hex, metalness: 0, roughness: 1 });
             newSelectable.knobs.push(child);
             initialChosen.knobs[child.name] = defaultColor;
+=======
+            const defaultColor = 'Negro';
+            child.material = new THREE.MeshStandardMaterial({ color: PALETTES.knobs[defaultColor].hex, metalness: 0, roughness: 1 });
+            newSelectable.knobs.push(child);
+            newChosenColors.knobs[child.name] = defaultColor;
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
           } else {
             child.material = new THREE.MeshStandardMaterial({ color: 0xffffff });
           }
         }
       }
       else if (meshName.includes('tecla')) {
+<<<<<<< HEAD
         const savedName = initialChosen.teclas[child.name];
         const defaultColor = savedName && PALETTES.teclas[savedName] ? savedName : 'Negro';
         child.material = new THREE.MeshPhysicalMaterial({ color: PALETTES.teclas[defaultColor].hex, metalness: 0.4, roughness: 0.68, clearcoat: 0.85, clearcoatRoughness: 0.08, reflectivity: 0.3, sheen: 0.5, sheenColor: 0x1C1C1C });
         newSelectable.teclas.push(child);
         initialChosen.teclas[child.name] = defaultColor;
+=======
+        const defaultColor = 'Negro';
+        child.material = new THREE.MeshPhysicalMaterial({ color: PALETTES.teclas[defaultColor].hex, metalness: 0.4, roughness: 0.68, clearcoat: 0.85, clearcoatRoughness: 0.08, reflectivity: 0.3, sheen: 0.5, sheenColor: 0x1C1C1C });
+        newSelectable.teclas.push(child);
+        newChosenColors.teclas[child.name] = defaultColor;
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
       }
       else if (meshName.includes('fader')) {
         console.log('Fader configurado en prepareModelParts Beato16:', child.name);
         if (meshName === 'fader1_1' || meshName === 'fader2_1' || meshName === 'fader3_1' || meshName === 'fader4_1') {
+<<<<<<< HEAD
           const savedName = initialChosen.faders[child.name];
           const defaultColor = savedName && PALETTES.knobs[savedName] ? savedName : 'Negro';
           child.material = new THREE.MeshStandardMaterial({ color: PALETTES.knobs[defaultColor].hex, metalness: 0, roughness: 1 });
           newSelectable.faders.push(child);
           initialChosen.faders[child.name] = defaultColor;
+=======
+          const defaultColor = 'Negro';
+          child.material = new THREE.MeshStandardMaterial({ color: PALETTES.knobs[defaultColor].hex, metalness: 0, roughness: 1 });
+          newSelectable.faders.push(child);
+          newChosenColors.faders[child.name] = defaultColor;
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
         } else {
           if (child.material) {
             const mat = child.material as THREE.MeshStandardMaterial;
             if (mat.color) {
               const lightness = (mat.color.r + mat.color.g + mat.color.b) / 3;
               if (lightness < 0.8) {
+<<<<<<< HEAD
                 const savedName = initialChosen.faders[child.name];
                 const defaultColor = savedName && PALETTES.knobs[savedName] ? savedName : 'Negro';
                 mat.color.setHex(parseInt(PALETTES.knobs[defaultColor].hex.replace('#', ''), 16));
                 newSelectable.faders.push(child);
                 initialChosen.faders[child.name] = defaultColor;
+=======
+                const defaultColor = 'Negro';
+                mat.color.setHex(parseInt(PALETTES.knobs[defaultColor].hex.replace('#', ''), 16));
+                newSelectable.faders.push(child);
+                newChosenColors.faders[child.name] = defaultColor;
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
               }
             }
           }
@@ -384,7 +446,11 @@ const Beato16Configurator: React.FC = () => {
     });
 
     setSelectable(newSelectable);
+<<<<<<< HEAD
     setChosenColors(initialChosen);
+=======
+    setChosenColors(newChosenColors);
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
   }, [envMap]);
 
   // Centrar y escalar modelo
@@ -575,6 +641,7 @@ const Beato16Configurator: React.FC = () => {
       const selectedObject = intersects[0].object as THREE.Mesh;
       if (currentView === 'normal') return;
 
+<<<<<<< HEAD
       const toggleMultiSelect = (setter: React.Dispatch<React.SetStateAction<THREE.Mesh[]>>, currentSelected: THREE.Mesh[], pool: THREE.Mesh[]) => {
         setSelectedForColoring(null);
         const alreadySelected = currentSelected.some(item => item.uuid === selectedObject.uuid);
@@ -592,6 +659,28 @@ const Beato16Configurator: React.FC = () => {
       else {
         setSelectedForColoring(selectedObject);
         setEmissive(selectedObject, 0x444444);
+=======
+      const handleMultiSelect = (setter: React.Dispatch<React.SetStateAction<THREE.Mesh[]>>, currentSelected: THREE.Mesh[]) => {
+        setSelectedForColoring(null);
+        const alreadySelected = currentSelected.find(item => item.uuid === selectedObject.uuid);
+        let newSelection;
+        if (event.shiftKey) {
+          newSelection = alreadySelected ? currentSelected.filter(item => item.uuid !== selectedObject.uuid) : [...currentSelected, selectedObject];
+        } else {
+          newSelection = [selectedObject];
+        }
+        setter(newSelection);
+        newSelection.forEach(item => setEmissive(item, 0x444444));
+      };
+
+      if (currentView === 'buttons') handleMultiSelect(setSelectedButtons, selectedButtons);
+      else if (currentView === 'knobs') handleMultiSelect(setSelectedKnobs, selectedKnobs);
+      else if (currentView === 'teclas') handleMultiSelect(setSelectedTeclas, selectedTeclas);
+      else if (currentView === 'faders') handleMultiSelect(setSelectedFaders, selectedFaders);
+      else {
+          setSelectedForColoring(selectedObject);
+          setEmissive(selectedObject, 0x444444);
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
       }
     } else {
       setSelectedForColoring(null);
@@ -621,6 +710,7 @@ const Beato16Configurator: React.FC = () => {
     setCurrentView(viewName);
     if (viewName === 'chasis' && selectable.chasis.length > 0) setSelectedForColoring(selectable.chasis[0]);
     else setSelectedForColoring(null);
+<<<<<<< HEAD
 
     // Al volver a vista normal, limpiar selecciones y glow
     if (viewName === 'normal') {
@@ -641,6 +731,18 @@ const Beato16Configurator: React.FC = () => {
       targetView = CAMERA_VIEWS.top;
       controlsRef.current.enabled = false;
     }
+=======
+    if (!cameraRef.current || !controlsRef.current) return;
+    let targetView, enableOrbit;
+    if (viewName === 'normal') {
+      targetView = CAMERA_VIEWS.normal;
+      enableOrbit = true;
+    } else {
+      targetView = CAMERA_VIEWS.top;
+      enableOrbit = false;
+    }
+    controlsRef.current.enabled = enableOrbit;
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
     gsap.to(cameraRef.current.position, { duration: 1.2, ease: 'power3.inOut', ...targetView.pos });
     gsap.to(controlsRef.current.target, { duration: 1.2, ease: 'power3.inOut', ...targetView.target, onUpdate: () => controlsRef.current.update() });
   }, [selectable]);
@@ -908,7 +1010,11 @@ const Beato16Configurator: React.FC = () => {
             width: currentView === 'normal' ? 'clamp(80px, 20vw, 112px)' : 'clamp(300px, 35vw, 360px)',
             height: '100vh',
             display: 'flex',
+<<<<<<< HEAD
             zIndex: 100,
+=======
+            zIndex: 10,
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
             transition: 'all 0.4s ease',
             right: window.innerWidth <= 768 ? -35 : -20
           }}
@@ -919,9 +1025,13 @@ const Beato16Configurator: React.FC = () => {
             style={{
               width: 'clamp(60px, 15vw, 112px)',
               flexShrink: 0,
+<<<<<<< HEAD
               paddingTop: 'clamp(20px, 5vh, 160px)',
               position: 'relative',
               zIndex: 50
+=======
+              paddingTop: 'clamp(20px, 5vh, 160px)'
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
             }}
           >
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(4px, 1vw, 6px)' }}>
@@ -940,7 +1050,10 @@ const Beato16Configurator: React.FC = () => {
                       alignItems: 'center',
                       justifyContent: 'center',
                       position: 'relative',
+<<<<<<< HEAD
                       zIndex: 100,
+=======
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
                       transition: 'all 0.3s ease',
                       color: 'white',
                       cursor: 'pointer',
@@ -995,7 +1108,10 @@ const Beato16Configurator: React.FC = () => {
                           height: 'clamp(20px, 5vw, 40px)',
                           objectFit: 'contain',
                           margin: 'auto',
+<<<<<<< HEAD
                           pointerEvents: 'none',
+=======
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
                           filter: item.id === 'faders' ? 'brightness(1.5) contrast(1.3) saturate(1.2) drop-shadow(0 0 6px rgba(0, 255, 255, 0.5))' : 'none',
                           backgroundColor: item.id === 'faders' ? 'rgba(0, 0, 0, 0.1)' : 'transparent'
                         }}
@@ -1013,8 +1129,12 @@ const Beato16Configurator: React.FC = () => {
                           height: 'clamp(20px, 5vw, 40px)',
                           fill: 'white',
                           color: 'white',
+<<<<<<< HEAD
                           margin: 'auto',
                           pointerEvents: 'none'
+=======
+                          margin: 'auto'
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
                         }}
                         fill="#fff"
                       >
@@ -1129,10 +1249,17 @@ const Beato16Configurator: React.FC = () => {
         </div>
 
         {currentView === 'normal' && (
+<<<<<<< HEAD
           <button onClick={handleFinalizeOpenModal} className="fixed bottom-10 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 text-lg font-bold uppercase tracking-wide text-black bg-purple-400 border-none rounded cursor-pointer transition-all duración-200 shadow-lg hover:bg-yellow-200 hover:scale-105 hover:shadow-xl shadow-[0_0_8px_2px_#a259ff80,0_0_16px_4px_#0ff5]">Finish and Send Configuration</button>
         )}
 
         {/* Modal: SweetAlert resumen + mailto/html2canvas */}
+=======
+          <button onClick={handleAddToCart} className="fixed bottom-10 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 text-lg font-bold uppercase tracking-wide text-black bg-purple-400 border-none rounded cursor-pointer transition-all duration-200 shadow-lg hover:bg-yellow-200 hover:scale-105 hover:shadow-xl shadow-[0_0_8px_2px_#a259ff80,0_0_16px_4px_#0ff5]">Finalizar y Enviar Configuración</button>
+        )}
+
+        {/* Modal eliminado: ahora el flujo es enviar por email con mailto */}
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
       </div>
       );
 };

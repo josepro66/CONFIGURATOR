@@ -58,7 +58,10 @@ const MixoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
   const [currentView, setCurrentView] = useState<'normal' | 'chasis' | 'buttons' | 'knobs' | 'faders'>('normal');
   const [selectedForColoring, setSelectedForColoring] = useState<THREE.Mesh | null>(null);
   const [isLandscape, setIsLandscape] = useState(false);
+<<<<<<< HEAD
   const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 768);
+=======
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
   
   // ==================================================================
   // DETECCIÓN DE ORIENTACIÓN
@@ -67,6 +70,7 @@ const MixoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
     const checkOrientation = () => {
       setIsLandscape(window.innerWidth > window.innerHeight);
     };
+<<<<<<< HEAD
     const checkMobile = () => {
       setIsMobile(window.innerWidth <= 768);
     };
@@ -77,12 +81,21 @@ const MixoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
     window.addEventListener('orientationchange', checkOrientation);
     window.addEventListener('resize', checkMobile);
     window.addEventListener('orientationchange', checkMobile);
+=======
+    
+    checkOrientation();
+    window.addEventListener('resize', checkOrientation);
+    window.addEventListener('orientationchange', checkOrientation);
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
     
     return () => {
       window.removeEventListener('resize', checkOrientation);
       window.removeEventListener('orientationchange', checkOrientation);
+<<<<<<< HEAD
       window.removeEventListener('resize', checkMobile);
       window.removeEventListener('orientationchange', checkMobile);
+=======
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
     };
   }, []);
   
@@ -312,6 +325,7 @@ const MixoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
     console.log('MixoConfigurator: showPaymentModal cambió a:', showPaymentModal);
   }, [showPaymentModal]);
 
+<<<<<<< HEAD
   // Capturar screenshot del canvas
   const getScreenshot = useCallback(() => {
     if (!rendererRef.current) return null;
@@ -445,11 +459,17 @@ const MixoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
     }
   }, [chosenColors, getScreenshotDefaultView]);
 
+=======
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
   // 1. Cargar el environment map y aplicarlo a la escena y materiales
   const [envMap, setEnvMap] = useState<THREE.Texture | null>(null);
   useEffect(() => {
     const loader = new THREE.TextureLoader();
+<<<<<<< HEAD
     loader.load(`${import.meta.env.BASE_URL}textures/blackhole.jpg.avif`, (texture) => {
+=======
+    loader.load('public/textures/blackhole.jpg.avif', (texture) => {
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
       texture.mapping = THREE.EquirectangularReflectionMapping;
       setEnvMap(texture);
     });
@@ -495,6 +515,7 @@ const MixoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
   // 3. Al cargar el modelo, aplicar el envMap y MeshPhysicalMaterial
   const prepareModelParts = useCallback((model: THREE.Group) => {
     const newSelectable: Selectable = { chasis: [], buttons: [], knobs: [], faders: [] };
+<<<<<<< HEAD
     let initialChosen: ChosenColors = { type: 'configUpdate', chasis: 'Gris', buttons: {}, knobs: {}, faders: {} };
     try {
       const saved = localStorage.getItem('mixo_chosenColors');
@@ -513,6 +534,9 @@ const MixoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
     } catch (e) {
       console.warn('Could not parse saved mixo_chosenColors', e);
     }
+=======
+    const newChosenColors: ChosenColors = { type: 'configUpdate', chasis: 'Gris', buttons: {}, knobs: {}, faders: {} };
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
 
     model.traverse((child: THREE.Object3D) => {
       if (!(child instanceof THREE.Mesh)) return;
@@ -528,15 +552,21 @@ const MixoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
       }
 
       if (meshName.includes('cubechasis')) {
+<<<<<<< HEAD
         const chasisName = initialChosen.chasis && PALETTES.chasis[initialChosen.chasis] ? initialChosen.chasis : 'Gris';
         child.material = new THREE.MeshPhysicalMaterial({ 
           color: PALETTES.chasis[chasisName].hex,
+=======
+        child.material = new THREE.MeshPhysicalMaterial({ 
+          color: PALETTES.chasis['Gris'].hex,
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
           metalness: 0.8,
           roughness: 0.35,
           clearcoat: 0.85,
           clearcoatRoughness: 0.1
         });
         newSelectable.chasis.push(child);
+<<<<<<< HEAD
         initialChosen.chasis = chasisName;
       }
       else if (meshName.includes('boton')) {
@@ -545,22 +575,42 @@ const MixoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
         child.material = new THREE.MeshPhysicalMaterial({ color: PALETTES.buttons[defaultColor].hex, metalness: 0.0, roughness: 0.0, clearcoat: 1.0, clearcoatRoughness: 0.0, reflectivity: 1.0, transmission: 0.0, thickness: 0.3, ior: 1.5, attenuationDistance: 0.5, attenuationColor: 0xFFFF00, transparent: false, opacity: 1.0, emissive: 0xFFFF00, emissiveIntensity: 3.0 });
         newSelectable.buttons.push(child);
         initialChosen.buttons[child.name] = defaultColor;
+=======
+        newChosenColors.chasis = 'Gris';
+      }
+      else if (meshName.includes('boton')) {
+        const defaultColor = 'Amarillo';
+        child.material = new THREE.MeshPhysicalMaterial({ color: PALETTES.buttons[defaultColor].hex, metalness: 0.0, roughness: 0.0, clearcoat: 1.0, clearcoatRoughness: 0.0, reflectivity: 1.0, transmission: 0.0, thickness: 0.3, ior: 1.5, attenuationDistance: 0.5, attenuationColor: 0xFFFF00, transparent: false, opacity: 1.0, emissive: 0xFFFF00, emissiveIntensity: 3.0 });
+        newSelectable.buttons.push(child);
+        newChosenColors.buttons[child.name] = defaultColor;
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
       }
       else if (meshName.includes('aro')) {
         child.material = new THREE.MeshPhysicalMaterial({ color: 0x000000, metalness: 0.0, roughness: 0.2, clearcoat: 0.8, clearcoatRoughness: 0.1, reflectivity: 0.5, transmission: 0.3, thickness: 0.5, ior: 1.4, attenuationDistance: 1.0, attenuationColor: 0xffffff, transparent: true, opacity: 0.7 });
         newSelectable.buttons.push(child);
+<<<<<<< HEAD
         initialChosen.buttons[child.name] = 'Negro';
+=======
+        newChosenColors.buttons[child.name] = 'Negro';
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
       }
       else if (meshName.startsWith('knob1_') || meshName.startsWith('knob2_') || meshName.startsWith('knob3_') || meshName.startsWith('knob4_')) {
         if ((child.material as THREE.MeshStandardMaterial)?.color) {
           const mat = child.material as THREE.MeshStandardMaterial;
           const lightness = (mat.color.r + mat.color.g + mat.color.b) / 3;
           if (lightness < 0.5) {
+<<<<<<< HEAD
             const savedName = initialChosen.knobs[child.name];
             const defaultColor = savedName && PALETTES.knobs[savedName] ? savedName : 'Negro';
             child.material = new THREE.MeshStandardMaterial({ color: PALETTES.knobs[defaultColor].hex, metalness: 0, roughness: 1 });
             newSelectable.knobs.push(child);
             initialChosen.knobs[child.name] = defaultColor;
+=======
+            const defaultColor = 'Negro';
+            child.material = new THREE.MeshStandardMaterial({ color: PALETTES.knobs[defaultColor].hex, metalness: 0, roughness: 1 });
+            newSelectable.knobs.push(child);
+            newChosenColors.knobs[child.name] = defaultColor;
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
           } else {
             child.material = new THREE.MeshStandardMaterial({ color: 0xffffff });
           }
@@ -568,22 +618,36 @@ const MixoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
       }
       else if (meshName.includes('fader')) {
         if (meshName === 'fader1_1' || meshName === 'fader2_1' || meshName === 'fader3_1' || meshName === 'fader4_1') {
+<<<<<<< HEAD
           const savedName = initialChosen.faders[child.name];
           const defaultColor = savedName && PALETTES.knobs[savedName] ? savedName : 'Negro';
           child.material = new THREE.MeshStandardMaterial({ color: PALETTES.knobs[defaultColor].hex, metalness: 0, roughness: 1 });
           newSelectable.faders.push(child);
           initialChosen.faders[child.name] = defaultColor;
+=======
+          const defaultColor = 'Negro';
+          child.material = new THREE.MeshStandardMaterial({ color: PALETTES.knobs[defaultColor].hex, metalness: 0, roughness: 1 });
+          newSelectable.faders.push(child);
+          newChosenColors.faders[child.name] = defaultColor;
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
         } else {
           if (child.material) {
             const mat = child.material as THREE.MeshStandardMaterial;
             if (mat.color) {
               const lightness = (mat.color.r + mat.color.g + mat.color.b) / 3;
               if (lightness < 0.8) {
+<<<<<<< HEAD
                 const savedName = initialChosen.faders[child.name];
                 const defaultColor = savedName && PALETTES.knobs[savedName] ? savedName : 'Negro';
                 mat.color.setHex(parseInt(PALETTES.knobs[defaultColor].hex.replace('#', ''), 16));
                 newSelectable.faders.push(child);
                 initialChosen.faders[child.name] = defaultColor;
+=======
+                const defaultColor = 'Negro';
+                mat.color.setHex(parseInt(PALETTES.knobs[defaultColor].hex.replace('#', ''), 16));
+                newSelectable.faders.push(child);
+                newChosenColors.faders[child.name] = defaultColor;
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
               }
             }
           }
@@ -591,7 +655,11 @@ const MixoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
       }
     });
     setSelectable(newSelectable);
+<<<<<<< HEAD
     setChosenColors(initialChosen);
+=======
+    setChosenColors(newChosenColors);
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
   }, [envMap]);
 
   // Función para restaurar el brillo LED original de un botón
@@ -613,7 +681,11 @@ const MixoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
       const { GLTFLoader } = await import('three/examples/jsm/loaders/GLTFLoader.js');
       const loader = new GLTFLoader();
       
+<<<<<<< HEAD
       loader.load(`${import.meta.env.BASE_URL}models/mixo.glb`, (gltf: any) => {
+=======
+      loader.load('./models/mixo.glb', (gltf: any) => {
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
         const model = gltf.scene as THREE.Group;
         modelRef.current = model;
         prepareModelParts(model);
@@ -662,6 +734,7 @@ const MixoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
     }
   }, [restoreButtonLED]);
 
+<<<<<<< HEAD
   // Helper: encontrar botón asociado a un aro
   const findAssociatedButtonFromRing = useCallback((ringName: string): THREE.Mesh | null => {
     const number = ringName.match(/\d+/)?.[0];
@@ -670,6 +743,8 @@ const MixoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
     return selectable.buttons.find(b => b.name === expected) || null;
   }, [selectable.buttons]);
 
+=======
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
   // Función para manejar clics en el canvas
   const handleCanvasClick = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
     if (!sceneRef.current || !cameraRef.current) return;
@@ -718,6 +793,7 @@ const MixoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
       if (name.includes('boton') || name.includes('aro')) {
         setSelectedKnobs([]);
         setSelectedFaders([]);
+<<<<<<< HEAD
 
         // Si es aro, mapear a su botón correspondiente
         let target = clickedMesh;
@@ -756,6 +832,98 @@ const MixoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
           next.forEach(f => setEmissive(f, 0x444444));
           return next;
         });
+=======
+        if (event.shiftKey) {
+          if (selectedButtons.length === 0 && selectedForColoring && selectedForColoring !== clickedMesh) {
+            setSelectedButtons([selectedForColoring, clickedMesh]);
+            setSelectedForColoring(null);
+            setEmissive(selectedForColoring, 0x444444);
+            setEmissive(clickedMesh, 0x444444);
+          } else {
+            setSelectedForColoring(null);
+            setSelectedButtons(prev => {
+              if (prev.length === 0) { setEmissive(clickedMesh, 0x444444); return [clickedMesh]; }
+              const already = prev.includes(clickedMesh);
+              let newSelected;
+              if (already) {
+                newSelected = prev.filter(obj => obj !== clickedMesh);
+                setEmissive(clickedMesh, 0x000000);
+              } else {
+                newSelected = [...prev, clickedMesh];
+                setEmissive(clickedMesh, 0x444444);
+              }
+              newSelected.forEach(btn => setEmissive(btn, 0x444444));
+              return newSelected;
+            });
+          }
+        } else {
+          setSelectedButtons([clickedMesh]);
+          setSelectedForColoring(clickedMesh);
+          setEmissive(clickedMesh, 0x444444);
+        }
+      } else if (name.startsWith('knob1_') || name.startsWith('knob2_') || name.startsWith('knob3_') || name.startsWith('knob4_')) {
+        setSelectedButtons([]);
+        setSelectedFaders([]);
+        if (event.shiftKey) {
+          if (selectedKnobs.length === 0 && selectedForColoring && selectedForColoring !== clickedMesh) {
+            setSelectedKnobs([selectedForColoring, clickedMesh]);
+            setSelectedForColoring(null);
+            setEmissive(selectedForColoring, 0x444444);
+            setEmissive(clickedMesh, 0x444444);
+          } else {
+            setSelectedForColoring(null);
+            setSelectedKnobs(prev => {
+              if (prev.length === 0) { setEmissive(clickedMesh, 0x444444); return [clickedMesh]; }
+              const already = prev.includes(clickedMesh);
+              let newSelected;
+              if (already) {
+                newSelected = prev.filter(obj => obj !== clickedMesh);
+                setEmissive(clickedMesh, 0x000000);
+              } else {
+                newSelected = [...prev, clickedMesh];
+                setEmissive(clickedMesh, 0x444444);
+              }
+              newSelected.forEach(knob => setEmissive(knob, 0x444444));
+              return newSelected;
+            });
+          }
+        } else {
+          setSelectedKnobs([clickedMesh]);
+          setSelectedForColoring(clickedMesh);
+          setEmissive(clickedMesh, 0x444444);
+        }
+      } else if (name.startsWith('fader1') || name.startsWith('fader2') || name.startsWith('fader3') || name.startsWith('fader4')) {
+        setSelectedButtons([]);
+        setSelectedKnobs([]);
+        if (event.shiftKey) {
+          if (selectedFaders.length === 0 && selectedForColoring && selectedForColoring !== clickedMesh) {
+            setSelectedFaders([selectedForColoring, clickedMesh]);
+            setSelectedForColoring(null);
+            setEmissive(selectedForColoring, 0x444444);
+            setEmissive(clickedMesh, 0x444444);
+          } else {
+            setSelectedForColoring(null);
+            setSelectedFaders(prev => {
+              if (prev.length === 0) { setEmissive(clickedMesh, 0x444444); return [clickedMesh]; }
+              const already = prev.includes(clickedMesh);
+              let newSelected;
+              if (already) {
+                newSelected = prev.filter(obj => obj !== clickedMesh);
+                setEmissive(clickedMesh, 0x000000);
+              } else {
+                newSelected = [...prev, clickedMesh];
+                setEmissive(clickedMesh, 0x444444);
+              }
+              newSelected.forEach(fader => setEmissive(fader, 0x444444));
+              return newSelected;
+            });
+          }
+        } else {
+          setSelectedFaders([clickedMesh]);
+          setSelectedForColoring(clickedMesh);
+          setEmissive(clickedMesh, 0x444444);
+        }
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
       } else if (name.includes('cubechasis')) {
         setSelectedButtons([]);
         setSelectedKnobs([]);
@@ -763,7 +931,11 @@ const MixoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
         setSelectedForColoring(clickedMesh);
       }
     }
+<<<<<<< HEAD
   }, [currentView, selectable, selectedForColoring, setEmissive, selectedButtons, selectedKnobs, selectedFaders, findAssociatedButtonFromRing]);
+=======
+  }, [currentView, selectable, selectedForColoring, setEmissive, selectedButtons, selectedKnobs, selectedFaders]);
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
 
   // Función para aplicar color
   const applyColor = useCallback((colorName: string, colorData: PaletteColor) => {
@@ -1090,7 +1262,11 @@ const MixoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
             width: '100vw',
             height: '100vh',
             zIndex: -1,
+<<<<<<< HEAD
             backgroundImage: `url(${import.meta.env.BASE_URL}textures/fondo.jpg)`,
+=======
+            backgroundImage: 'url(/textures/fondo.jpg)',
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             backgroundRepeat: 'no-repeat',
@@ -1157,6 +1333,7 @@ const MixoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
         <main className="flex w-full h-full" style={{ minHeight: "100vh", height: "100vh", position: "relative", zIndex: 1, overflow: "hidden", background: "transparent" }}>
           <div className="flex-grow h-full" style={{ position: "relative", zIndex: 1, background: "transparent" }}>
             <div ref={mountRef} className="w-full h-full transition-all duration-300" onClick={handleCanvasClick} style={{ position: "relative", zIndex: 1 }} />
+<<<<<<< HEAD
             {currentView === 'normal' && (
               <button
                 onClick={handleFinalizeOpenModal}
@@ -1165,6 +1342,9 @@ const MixoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
                 Finish and Send Configuration
               </button>
             )}
+=======
+            {currentView === 'normal' && (<button onClick={handleOpenPayment} className="fixed bottom-10 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 text-lg font-bold uppercase tracking-wide text-black bg-purple-400 border-none rounded cursor-pointer transition-all duration-200 shadow-lg hover:bg-yellow-200 hover:scale-105 hover:shadow-xl">ADD TO CART</button>)}
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
           </div>
         </main>
         <div
@@ -1185,7 +1365,11 @@ const MixoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
             style={{
               width: 'clamp(60px, 15vw, 112px)',
               flexShrink: 0,
+<<<<<<< HEAD
               paddingTop: 'clamp(20px, 5vh, 160px)'
+=======
+              paddingTop: 'clamp(20px, 5vh, 100px)'
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
             }}
           >
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(4px, 1vw, 6px)' }}>
@@ -1288,7 +1472,11 @@ const MixoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
             </div>
           </div>
 
+<<<<<<< HEAD
           {/* Contenido de la UI (alineado a Beato16) */}
+=======
+          {/* Contenido de la UI */}
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
           <div 
             style={{
               flex: 1,
@@ -1315,7 +1503,11 @@ const MixoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
               }}
             >
               <img
+<<<<<<< HEAD
                 src={`${import.meta.env.BASE_URL}models/logo.png`}
+=======
+                src="models/logo.png"
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
                 alt="Logo"
                 style={{
                   height: currentView === 'normal' ? 'clamp(20px, 5vw, 24px)' : 'clamp(28px, 7vw, 32px)',
@@ -1325,7 +1517,11 @@ const MixoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
               />
             </div>
 
+<<<<<<< HEAD
             {/* Sección de colores - igual a Beato16 (2 columnas y márgenes) */}
+=======
+            {/* Sección de colores - solo visible cuando no está en vista normal */}
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
             {currentView !== 'normal' && (
               <div style={{ marginTop: 'clamp(12px, 2.5vw, 20px)' }} className="animate-fadeIn">
                 <p 
@@ -1345,6 +1541,7 @@ const MixoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
                 <div 
                   style={{
                     display: 'grid',
+<<<<<<< HEAD
                     gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
                     rowGap: '5px',
                     columnGap: '0px',
@@ -1353,6 +1550,12 @@ const MixoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
                     marginLeft: isMobile ? '-24px' : '35px',
                     transform: isMobile ? 'translateX(-36px)' : 'none',
                     transition: 'transform 150ms ease'
+=======
+                    gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+                    gap: 'clamp(8px, 1.5vw, 12px)',
+                    padding: 0,
+                    justifyItems: 'start',
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
                   }}
                   className="animate-scaleIn"
                 >
@@ -1366,10 +1569,16 @@ const MixoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
                         cursor: 'pointer',
                         border: '1px solid #a259ff',
                         boxShadow: '0 0 6px 1px rgba(162, 89, 255, 0.33)',
+<<<<<<< HEAD
                         transition: 'transform 0.15s ease, margin-left 0.15s ease',
                         backgroundColor: colorData.hex,
                         animationDelay: `${index * 40}ms`,
                         marginLeft: '0px'
+=======
+                        transition: 'transform 0.15s ease',
+                        backgroundColor: colorData.hex,
+                        animationDelay: `${index * 40}ms`
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
                       }}
                       title={name}
                       onClick={() => applyColor(name, colorData)}

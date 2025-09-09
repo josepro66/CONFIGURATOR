@@ -40,7 +40,10 @@ const FadoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
   const [currentView, setCurrentView] = useState<'normal' | 'chasis' | 'faders'>('normal');
   const [selectedForColoring, setSelectedForColoring] = useState<THREE.Mesh | null>(null);
   const [isLandscape, setIsLandscape] = useState(false);
+<<<<<<< HEAD
   const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 768);
+=======
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
   
   // ==================================================================
   // DETECCIÓN DE ORIENTACIÓN
@@ -49,6 +52,7 @@ const FadoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
     const checkOrientation = () => {
       setIsLandscape(window.innerWidth > window.innerHeight);
     };
+<<<<<<< HEAD
     const checkMobile = () => {
       setIsMobile(window.innerWidth <= 768);
     };
@@ -59,12 +63,21 @@ const FadoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
     window.addEventListener('orientationchange', checkOrientation);
     window.addEventListener('resize', checkMobile);
     window.addEventListener('orientationchange', checkMobile);
+=======
+    
+    checkOrientation();
+    window.addEventListener('resize', checkOrientation);
+    window.addEventListener('orientationchange', checkOrientation);
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
     
     return () => {
       window.removeEventListener('resize', checkOrientation);
       window.removeEventListener('orientationchange', checkOrientation);
+<<<<<<< HEAD
       window.removeEventListener('resize', checkMobile);
       window.removeEventListener('orientationchange', checkMobile);
+=======
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
     };
   }, []);
   
@@ -87,6 +100,10 @@ const FadoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
   
   // Estado para selección múltiple de faders
   const [selectedFaders, setSelectedFaders] = useState<THREE.Mesh[]>([]);
+<<<<<<< HEAD
+=======
+  const [screenshot, setScreenshot] = useState<string | null>(null);
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
 
   // Eliminado: estado/efectos de pagos y moneda
 
@@ -143,7 +160,11 @@ const FadoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
   }, []);
 
   // Configuración de iluminación profesional
+<<<<<<< HEAD
   const setupProfessionalLighting = useCallback((scene: THREE.Scene) => {
+=======
+  const setupProfessionalLighting = useCallback((scene: THREE.Scene, renderer: THREE.WebGLRenderer) => {
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
     // Luz ambiental suave
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
     scene.add(ambientLight);
@@ -212,12 +233,17 @@ const FadoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
   // Preparar partes del modelo
   const prepareModelParts = useCallback((model: THREE.Group) => {
     const newSelectable: Selectable = { chasis: [], faders: [] };
+<<<<<<< HEAD
     // Cargar configuración previa si existe
     let initialChosen: ChosenColors = {
+=======
+    const newChosenColors: ChosenColors = {
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
       type: 'configUpdate',
       chasis: 'Gray',
       faders: {}
     };
+<<<<<<< HEAD
     try {
       const saved = localStorage.getItem('fado_chosenColors');
       if (saved) {
@@ -233,6 +259,8 @@ const FadoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
     } catch (e) {
       console.warn('Could not parse saved fado_chosenColors', e);
     }
+=======
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
 
     const allMeshes: string[] = [];
     
@@ -287,14 +315,22 @@ const FadoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
 
       if (meshName.includes('cubechasis')) {
         child.material = new THREE.MeshPhysicalMaterial({ 
+<<<<<<< HEAD
           color: PALETTES.chasis[initialChosen.chasis] ? PALETTES.chasis[initialChosen.chasis].hex : PALETTES.chasis['Gray'].hex, 
+=======
+          color: PALETTES.chasis['Gray'].hex, 
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
           metalness: 0.8,
           roughness: 0.35,
           clearcoat: 0.85,
           clearcoatRoughness: 0.1
         });
         newSelectable.chasis.push(child);
+<<<<<<< HEAD
         initialChosen.chasis = initialChosen.chasis || 'Gray';
+=======
+        newChosenColors.chasis = 'Gris';
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
       }
       else if (meshName.includes('aro')) {
         child.material = new THREE.MeshPhysicalMaterial({ color: 0x000000, metalness: 0.0, roughness: 0.2, clearcoat: 0.8, clearcoatRoughness: 0.1, reflectivity: 0.5, transmission: 0.3, thickness: 0.5, ior: 1.4, attenuationDistance: 1.0, attenuationColor: 0xffffff, transparent: true, opacity: 0.7 });
@@ -302,22 +338,36 @@ const FadoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
       else if (meshName.includes('fader')) {
         console.log('Fader detectado en Fado:', child.name);
         if (meshName === 'fader1_1' || meshName === 'fader2_1' || meshName === 'fader3_1' || meshName === 'fader4_1' || meshName === 'fader5_1' || meshName === 'fader6_1' || meshName === 'fader7_1' || meshName === 'fader8_1') {
+<<<<<<< HEAD
           const saved = initialChosen.faders[child.name];
           const defaultColor = saved && PALETTES.faders[saved] ? saved : 'Black';
           child.material = new THREE.MeshStandardMaterial({ color: PALETTES.faders[defaultColor].hex, metalness: 0, roughness: 1 });
           newSelectable.faders.push(child);
           initialChosen.faders[child.name] = defaultColor;
+=======
+          const defaultColor = 'Black';
+          child.material = new THREE.MeshStandardMaterial({ color: PALETTES.faders[defaultColor].hex, metalness: 0, roughness: 1 });
+          newSelectable.faders.push(child);
+          newChosenColors.faders[child.name] = defaultColor;
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
         } else {
           if (child.material) {
             const mat = child.material as THREE.MeshStandardMaterial;
             if (mat.color) {
               const lightness = (mat.color.r + mat.color.g + mat.color.b) / 3;
               if (lightness < 0.8) {
+<<<<<<< HEAD
                 const saved = initialChosen.faders[child.name];
                 const defaultColor = saved && PALETTES.faders[saved] ? saved : 'Black';
                 mat.color.setHex(parseInt(PALETTES.faders[defaultColor].hex.replace('#', ''), 16));
                 newSelectable.faders.push(child);
                 initialChosen.faders[child.name] = defaultColor;
+=======
+                const defaultColor = 'Black';
+                mat.color.setHex(parseInt(PALETTES.faders[defaultColor].hex.replace('#', ''), 16));
+                newSelectable.faders.push(child);
+                newChosenColors.faders[child.name] = defaultColor;
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
               }
             }
           }
@@ -326,8 +376,12 @@ const FadoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
     });
 
     setSelectable(newSelectable);
+<<<<<<< HEAD
     // Preservar elecciones previas
     setChosenColors(initialChosen);
+=======
+    setChosenColors(newChosenColors);
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
   }, []);
 
   // Cargar modelo
@@ -414,7 +468,11 @@ const FadoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
       controlsRef.current = controls;
     });
 
+<<<<<<< HEAD
     setupProfessionalLighting(scene);
+=======
+    setupProfessionalLighting(scene, renderer);
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
     loadModel();
 
     // Bucle de animación
@@ -557,7 +615,49 @@ const FadoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
   }, [selectable, selectedForColoring, setEmissive, selectedFaders]);
 
   // Función para cambiar color
+<<<<<<< HEAD
   // (remove unused old changeColor)
+=======
+  const changeColor = useCallback((colorName: string) => {
+    if (!selectedForColoring) return;
+
+    const meshName = selectedForColoring.name.toLowerCase();
+    let palette: Record<string, PaletteColor> | null = null;
+    let colorKey: string | null = null;
+
+    if (meshName.includes('cubechasis')) {
+      palette = PALETTES.chasis;
+      colorKey = 'chasis';
+    } else if (meshName.includes('fader')) {
+      palette = PALETTES.knobs;
+      colorKey = selectedForColoring.name;
+    }
+
+    if (palette && colorKey && palette[colorName]) {
+      const colorHex = palette[colorName].hex;
+      if (selectedForColoring.material && 'color' in selectedForColoring.material) {
+        (selectedForColoring.material as THREE.MeshStandardMaterial).color.setHex(parseInt(colorHex.replace('#', ''), 16));
+      }
+
+      setChosenColors(prev => {
+        if (colorKey === 'chasis') {
+          return {
+            ...prev,
+            chasis: colorName
+          };
+        } else {
+          return {
+            ...prev,
+            faders: {
+              ...prev.faders,
+              [colorKey!]: colorName
+            }
+          };
+        }
+      });
+    }
+  }, [selectedForColoring]);
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
 
   // Manejo de clicks en el canvas
   const handleCanvasClick = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
@@ -568,11 +668,14 @@ const FadoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
       return;
     }
 
+<<<<<<< HEAD
     // No permitir selección en vista normal
     if (currentView === 'normal') {
       return;
     }
 
+=======
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
     const raycaster = new THREE.Raycaster();
     const pointer = new THREE.Vector2();
     const bounds = rendererRef.current.domElement.getBoundingClientRect();
@@ -585,6 +688,11 @@ const FadoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
     let objectsToIntersect: THREE.Mesh[] = [];
     if (currentView === 'faders') {
       objectsToIntersect = selectable.faders;
+<<<<<<< HEAD
+=======
+    } else if (currentView === 'normal') {
+      objectsToIntersect = selectable.faders;
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
     }
     
     if (objectsToIntersect.length === 0) return;
@@ -594,6 +702,7 @@ const FadoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
     if (intersects.length > 0) {
       const clickedMesh = intersects[0].object as THREE.Mesh;
       const name = clickedMesh.name.toLowerCase();
+<<<<<<< HEAD
 
       if (name.includes('fader')) {
         // Multi-selección sin Shift (toggle)
@@ -606,6 +715,47 @@ const FadoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
           next.forEach(f => setEmissive(f, 0x444444));
           return next;
         });
+=======
+      
+      if (name.includes('fader')) {
+        console.log('Click detectado en fader:', name, 'Vista actual:', currentView);
+        
+        if (event.shiftKey) {
+          if (selectedFaders.length === 0 && selectedForColoring && selectedForColoring !== clickedMesh) {
+            setSelectedFaders([selectedForColoring, clickedMesh]);
+            setSelectedForColoring(null);
+            // Aplicar glow a ambos faders seleccionados
+            setEmissive(selectedForColoring, 0x444444);
+            setEmissive(clickedMesh, 0x444444);
+          } else {
+            setSelectedForColoring(null);
+            setSelectedFaders(prev => {
+              if (prev.length === 0) {
+                setEmissive(clickedMesh, 0x444444);
+                return [clickedMesh];
+              }
+              const already = prev.includes(clickedMesh);
+              let newSelected;
+              if (already) {
+                newSelected = prev.filter(obj => obj !== clickedMesh);
+                // Quitar glow del fader deseleccionado
+                setEmissive(clickedMesh, 0x000000);
+              } else {
+                newSelected = [...prev, clickedMesh];
+                setEmissive(clickedMesh, 0x444444);
+              }
+              // Aplicar glow a todos los faders seleccionados
+              newSelected.forEach(fader => setEmissive(fader, 0x444444));
+              return newSelected;
+            });
+          }
+        } else {
+          setSelectedFaders([]);
+          setSelectedForColoring(clickedMesh);
+          // Aplicar glow al fader seleccionado
+          setEmissive(clickedMesh, 0x444444);
+        }
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
       } else if (name.includes('cubechasis')) {
         setSelectedFaders([]);
         setSelectedForColoring(clickedMesh);
@@ -679,6 +829,7 @@ const FadoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
     }
   }, [currentView, selectable, selectedForColoring, selectedFaders, chosenColors]);
 
+<<<<<<< HEAD
   // Capturar screenshot del canvas
   const getScreenshot = useCallback(() => {
     if (!rendererRef.current) return null;
@@ -812,6 +963,80 @@ const FadoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
   }, [chosenColors, getScreenshotDefaultView]);
 
   // Checkout eliminado: flujo reemplazado por modal + mailto
+=======
+  // Enviar configuración por email
+  const handleOpenPayment = useCallback(() => {
+    const emailDestino = 'tu-email-de-negocio@ejemplo.com';
+    const asunto = 'Configuración de Fado';
+    const colorSummary = `\nHola,\n\nEsta es mi configuración para el Fado:\n\n- Chasis: ${chosenColors.chasis}\n- Faders: ${Object.values(chosenColors.faders).join(', ') || 'Default'}\n\n(Adjunto también los datos en formato JSON para precisión: ${JSON.stringify(chosenColors)})\n\n¡Gracias!\n`;
+    const mailtoLink = `mailto:${emailDestino}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(colorSummary)}`;
+    window.location.href = mailtoLink;
+  }, [chosenColors]);
+
+  // Función para manejar el checkout de PayU localmente
+  const handlePayUCheckoutLocal = () => {
+    const popupTarget = 'payu_checkout';
+    let popupRef = window.open('', popupTarget);
+    
+    if (!popupRef) {
+      alert('Please allow popups to continue with payment');
+      return;
+    }
+
+    // Obtener configuración de la moneda seleccionada
+    const currencyConfig = getFadoCurrencyConfig(selectedCurrency);
+    
+    // Generar firma localmente
+    const signatureString = `${PAYU_CONFIG.API_KEY}~${PAYU_CONFIG.MERCHANT_ID}~${payuData.referenceCode}~${currencyConfig.amount}~${selectedCurrency}`;
+    const signature = MD5(signatureString).toString();
+
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = currencyConfig.url;
+    form.target = popupTarget;
+
+    const formData = {
+      merchantId: PAYU_CONFIG.MERCHANT_ID,
+      accountId: currencyConfig.accountId,
+      description: `Fado Configurator - ${selectedCurrency} ${currencyConfig.symbol}${currencyConfig.amount}`,
+      referenceCode: payuData.referenceCode,
+      amount: currencyConfig.amount,
+      currency: selectedCurrency,
+      buyerEmail: payuData.buyerEmail,
+      signature: signature,
+      test: PAYU_CONFIG.TEST_MODE ? '1' : '0',
+      confirmationUrl: PAYU_CONFIG.CONFIRMATION_URL,
+      responseUrl: PAYU_CONFIG.RESPONSE_URL,
+      // Parámetros para forzar moneda y país
+      lng: currencyConfig.language,
+      // Datos del modal para el webhook
+      extra1: 'Fado',
+      extra2: chosenColors.chasis || 'Custom',
+      extra3: `Applied colors - Faders: ${Object.keys(chosenColors.faders || {}).length}`,
+      extra4: `Fado Configurator - ${selectedCurrency} ${currencyConfig.symbol}${currencyConfig.amount}`,
+      // Additional parameters for PayU
+      payerCountry: 'CO',
+      payerCity: 'Bogota',
+      payerPhone: '+57-300-1234567',
+      // Forzar configuración regional
+      country: 'CO',
+      // Evitar detección automática de ubicación
+      ipAddress: '8.8.4.4'
+    };
+
+    Object.entries(formData).forEach(([key, value]) => {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = key;
+      input.value = value;
+      form.appendChild(input);
+    });
+
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+  };
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
 
   const menuIcons = [
     { 
@@ -982,11 +1207,16 @@ const FadoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
           </div>
         </main>
 
+<<<<<<< HEAD
                  {/* Panel de UI (alineado a Beato16) */}
+=======
+                 {/* Panel de UI */}
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
          <div
            style={{
              position: 'fixed',
              top: 0,
+<<<<<<< HEAD
              width: currentView === 'normal' ? 'clamp(80px, 20vw, 112px)' : 'clamp(300px, 35vw, 360px)',
              height: '100vh',
              display: 'flex',
@@ -995,6 +1225,15 @@ const FadoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
              right: isMobile ? -35 : -20
            }}
            className="mobile-panel"
+=======
+             width: currentView === 'normal' ? 'clamp(80px, 20vw, 112px)' : 'clamp(280px, 70vw, 320px)',
+             height: '100vh',
+             display: 'flex',
+             zIndex: 10,
+             transition: 'all 0.4s ease'
+           }}
+           className="mobile-panel right-[-35px] md:right-[-20px]"
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
          >
 
           {/* Columna de controles de vista */}
@@ -1002,9 +1241,13 @@ const FadoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
             style={{
               width: 'clamp(60px, 15vw, 112px)',
               flexShrink: 0,
+<<<<<<< HEAD
               paddingTop: 'clamp(20px, 5vh, 160px)',
               position: 'relative',
               zIndex: 50
+=======
+              paddingTop: 'clamp(20px, 5vh, 160px)'
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
             }}
           >
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(4px, 1vw, 6px)' }}>
@@ -1027,7 +1270,10 @@ const FadoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
                     alignItems: 'center',
                     justifyContent: 'center',
                     position: 'relative',
+<<<<<<< HEAD
                     zIndex: 100,
+=======
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
                     transition: 'all 0.3s ease',
                     color: 'white',
                     cursor: 'pointer',
@@ -1082,7 +1328,10 @@ const FadoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
                         height: 'clamp(20px, 5vw, 40px)',
                         objectFit: 'contain',
                         margin: 'auto',
+<<<<<<< HEAD
                         pointerEvents: 'none',
+=======
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
                         filter: id === 'faders' ? 'brightness(1.5) contrast(1.3) saturate(1.2) drop-shadow(0 0 6px rgba(0, 255, 255, 0.5))' : 'none',
                         backgroundColor: id === 'faders' ? 'rgba(0, 0, 0, 0.1)' : 'transparent'
                       }}
@@ -1100,8 +1349,12 @@ const FadoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
                         height: 'clamp(20px, 5vw, 40px)',
                         fill: 'white',
                         color: 'white',
+<<<<<<< HEAD
                         margin: 'auto',
                         pointerEvents: 'none'
+=======
+                        margin: 'auto'
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
                       }}
                       fill="#fff"
                     >
@@ -1113,6 +1366,7 @@ const FadoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
             </div>
           </div>
 
+<<<<<<< HEAD
           {/* Contenido de la UI (fondo/borde/padding como Beato16) */}
           <div 
             style={{
@@ -1124,6 +1378,15 @@ const FadoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
               borderLeft: currentView === 'normal' ? 'none' : '1px solid #4b5563',
               backdropFilter: currentView === 'normal' ? undefined : 'blur(6px)',
               overflowY: currentView === 'normal' ? 'visible' : 'auto'
+=======
+          {/* Contenido de la UI */}
+          <div 
+            style={{
+              flex: 1,
+              padding: 'clamp(4px, 1vw, 8px)',
+              display: 'flex',
+              flexDirection: 'column'
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
             }}
           >
             {/* Header - Solo logo en vista normal */}
@@ -1150,6 +1413,7 @@ const FadoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
               />
             </div>
 
+<<<<<<< HEAD
             {/* Sección de colores - igual a Beato16 (2 columnas y márgenes responsive) */}
             {currentView !== 'normal' && (
               <div style={{ marginTop: 'clamp(12px, 2.5vw, 20px)' }} className="animate-fadeIn">
@@ -1160,6 +1424,18 @@ const FadoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
                     letterSpacing: '0.05em',
                     textTransform: 'uppercase',
                     margin: '0 0 clamp(10px, 2vw, 14px) 0',
+=======
+            {/* Sección de colores - solo visible cuando no está en vista normal */}
+            {currentView !== 'normal' && (
+              <div style={{ marginTop: 'clamp(16px, 4vw, 24px)' }} className="animate-fadeIn">
+                <p 
+                  style={{
+                    fontWeight: 900,
+                    fontSize: 'clamp(10px, 2.5vw, 14px)',
+                    letterSpacing: '0.05em',
+                    textTransform: 'uppercase',
+                    margin: '0 0 clamp(8px, 2vw, 12px) 0',
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
                     color: '#e5e7eb',
                     textAlign: 'left'
                   }}
@@ -1170,6 +1446,7 @@ const FadoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
                 <div 
                   style={{
                     display: 'grid',
+<<<<<<< HEAD
                     gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
                     rowGap: '5px',
                     columnGap: '0px',
@@ -1178,6 +1455,13 @@ const FadoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
                     marginLeft: isMobile ? '-24px' : '35px',
                     transform: isMobile ? 'translateX(-36px)' : 'none',
                     transition: 'transform 150ms ease'
+=======
+                    gridTemplateColumns: 'repeat(2, 1fr)',
+                    gap: 'clamp(4px, 1vw, 6px)',
+                    padding: 0,
+                    justifyItems: 'end',
+                    marginLeft: 'auto'
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
                   }}
                   className="animate-scaleIn"
                 >
@@ -1185,21 +1469,36 @@ const FadoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
                     <div
                       key={name}
                       style={{
+<<<<<<< HEAD
                         width: 'clamp(30px, 7vw, 44px)',
                         height: 'clamp(30px, 7vw, 44px)',
+=======
+                        width: 'clamp(32px, 8vw, 40px)',
+                        height: 'clamp(32px, 8vw, 40px)',
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
                         borderRadius: '50%',
                         cursor: 'pointer',
                         border: '1px solid #a259ff',
                         boxShadow: '0 0 6px 1px rgba(162, 89, 255, 0.33)',
+<<<<<<< HEAD
                         transition: 'transform 0.15s ease, margin-left 0.15s ease',
                         backgroundColor: colorData.hex,
                         animationDelay: `${index * 40}ms`,
                         marginLeft: '0px'
+=======
+                        transition: 'all 0.2s ease',
+                        backgroundColor: colorData.hex,
+                        animationDelay: `${index * 50}ms`
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
                       }}
                       title={name}
                       onClick={() => applyColor(name, colorData)}
                       onMouseEnter={(e) => {
+<<<<<<< HEAD
                         e.currentTarget.style.transform = 'scale(1.07)';
+=======
+                        e.currentTarget.style.transform = 'scale(1.1)';
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
                       }}
                       onMouseLeave={(e) => {
                         e.currentTarget.style.transform = 'scale(1)';
@@ -1253,6 +1552,7 @@ const FadoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
           </div>
         </div>
 
+<<<<<<< HEAD
         {/* Botón de finalizar (solo visible en vista normal) */}
         {currentView === 'normal' && (
           <button 
@@ -1264,6 +1564,19 @@ const FadoConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
         )}
 
         {/* Flujo de pago eliminado: ahora se usa modal + mailto */}
+=======
+        {/* Botón de comprar (solo visible en vista normal) */}
+        {currentView === 'normal' && (
+          <button 
+            onClick={handleOpenPayment}
+            className="fixed bottom-10 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 text-lg font-bold uppercase tracking-wide text-black bg-purple-400 border-none rounded cursor-pointer transition-all duration-200 shadow-lg hover:bg-yellow-200 hover:scale-105 hover:shadow-xl shadow-[0_0_8px_2px_#a259ff80,0_0_16px_4px_#0ff5]"
+          >
+            Finalizar y Enviar Configuración
+          </button>
+        )}
+
+        {/* Flujo de pago eliminado: ahora se usa mailto */}
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
       </div>
     </div>
   );

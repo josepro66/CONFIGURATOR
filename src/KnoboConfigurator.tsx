@@ -234,6 +234,7 @@ const MidiConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
     }
   }, [chosenColors]);
 
+<<<<<<< HEAD
   // Capturar screenshot del canvas
   const getScreenshot = useCallback(() => {
     if (!rendererRef.current) return null;
@@ -365,6 +366,8 @@ const MidiConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
     }
   }, [chosenColors, getScreenshotDefaultView]);
 
+=======
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
   // 1. Cargar el environment map y aplicarlo a la escena y materiales
   const [envMap, setEnvMap] = useState<THREE.Texture | null>(null);
   useEffect(() => {
@@ -423,13 +426,18 @@ const MidiConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
   // 3. Al cargar el modelo, aplicar el envMap y MeshPhysicalMaterial
   const prepareModelParts = useCallback((model: THREE.Group) => {
     const newSelectable: Selectable = { chasis: [], buttons: [], knobs: [] };
+<<<<<<< HEAD
     // Load saved choices if available
     let initialChosen: ChosenColors = {
+=======
+    const newChosenColors: ChosenColors = {
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
       type: 'configUpdate',
       chasis: 'Azul',
       buttons: {},
       knobs: {}
     };
+<<<<<<< HEAD
     try {
       const saved = localStorage.getItem('knobo_chosenColors');
       if (saved) {
@@ -446,6 +454,8 @@ const MidiConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
     } catch (e) {
       console.warn('Could not parse saved knobo_chosenColors', e);
     }
+=======
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
 
     model.traverse((child: THREE.Object3D) => {
       if (!(child instanceof THREE.Mesh)) return;
@@ -469,20 +479,32 @@ const MidiConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
       }
 
       if (meshName.includes('cubechasis')) {
+<<<<<<< HEAD
         const chasisName = initialChosen.chasis && PALETTES.chasis[initialChosen.chasis] ? initialChosen.chasis : 'Gris';
         child.material = new THREE.MeshPhysicalMaterial({ 
           color: PALETTES.chasis[chasisName].hex, 
+=======
+        child.material = new THREE.MeshPhysicalMaterial({ 
+          color: PALETTES.chasis['Gris'].hex, 
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
           metalness: 0.8,
           roughness: 0.35,
           clearcoat: 0.85,
           clearcoatRoughness: 0.1
         });
         newSelectable.chasis.push(child);
+<<<<<<< HEAD
         initialChosen.chasis = chasisName;
       }
       else if (meshName.includes('boton')) {
         const savedName = initialChosen.buttons[child.name];
         const defaultColor = savedName && PALETTES.buttons[savedName] ? savedName : 'Negro';
+=======
+        newChosenColors.chasis = 'Gris';
+      }
+      else if (meshName.includes('boton')) {
+        const defaultColor = 'Negro';
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
         child.material = new THREE.MeshPhysicalMaterial({ 
           color: PALETTES.buttons[defaultColor].hex, 
           metalness: 0.4,
@@ -494,7 +516,11 @@ const MidiConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
           sheenColor: 0x1C1C1C
         });
         newSelectable.buttons.push(child);
+<<<<<<< HEAD
         initialChosen.buttons[child.name] = defaultColor;
+=======
+        newChosenColors.buttons[child.name] = defaultColor;
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
       }
       else if (meshName.includes('aro')) {
         child.material = new THREE.MeshPhysicalMaterial({ color: 0x000000, metalness: 0.0, roughness: 0.2, clearcoat: 0.8, clearcoatRoughness: 0.1, reflectivity: 0.5, transmission: 0.3, thickness: 0.5, ior: 1.4, attenuationDistance: 1.0, attenuationColor: 0xffffff, transparent: true, opacity: 0.7 });
@@ -506,15 +532,23 @@ const MidiConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
           const mat = child.material as THREE.MeshStandardMaterial;
           const lightness = (mat.color.r + mat.color.g + mat.color.b) / 3;
           if (lightness < 0.5) {
+<<<<<<< HEAD
             const savedName = initialChosen.knobs[child.name];
             const defaultColor = savedName && PALETTES.knobs[savedName] ? savedName : 'Negro';
+=======
+            const defaultColor = 'Negro';
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
             child.material = new THREE.MeshStandardMaterial({ 
               color: PALETTES.knobs[defaultColor].hex, 
               metalness: 0, 
               roughness: 1 
             });
             newSelectable.knobs.push(child);
+<<<<<<< HEAD
             initialChosen.knobs[child.name] = defaultColor;
+=======
+            newChosenColors.knobs[child.name] = defaultColor;
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
           } else {
             child.material = new THREE.MeshStandardMaterial({ color: 0xffffff });
           }
@@ -523,7 +557,11 @@ const MidiConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
     });
 
     setSelectable(newSelectable);
+<<<<<<< HEAD
     setChosenColors(initialChosen);
+=======
+    setChosenColors(newChosenColors);
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
   }, [envMap]);
 
   // Centrar y escalar modelo
@@ -789,6 +827,7 @@ const MidiConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
     if (objectsToIntersect.length === 0) return;
     
     const intersects = raycaster.intersectObjects(objectsToIntersect, false);
+<<<<<<< HEAD
     if (intersects.length > 0) {
       const selectedObject = intersects[0].object as THREE.Mesh;
       
@@ -828,11 +867,86 @@ const MidiConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
         setSelectedButtons([]);
         setSelectedForColoring(selectedObject);
         setEmissive(selectedObject, 0x444444);
+=======
+    // Limpia el resaltado de todos los botones (solo en vista de botones)
+    if (currentView === 'buttons') {
+      selectable.buttons.forEach(btn => setEmissive(btn, 0x000000));
+    }
+    if (selectedForColoring && currentView !== 'normal') {
+      setEmissive(selectedForColoring, 0x000000);
+    }
+    
+    if (intersects.length > 0) {
+      const selectedObject = intersects[0].object as THREE.Mesh;
+      
+      // En vista normal, solo reproducir animación sin selección
+      if (currentView === 'normal') {
+        return;
+      }
+      
+      if (currentView === 'buttons' && event.shiftKey) {
+        if (selectedButtons.length === 0 && selectedForColoring && selectedForColoring !== selectedObject) {
+          setSelectedButtons([selectedForColoring, selectedObject]);
+          setSelectedForColoring(null);
+          // Aplicar glow a ambos botones seleccionados
+          setEmissive(selectedForColoring, 0x444444);
+          setEmissive(selectedObject, 0x444444);
+        } else {
+          setSelectedForColoring(null);
+          setSelectedButtons(prev => {
+            if (prev.length === 0) {
+              setEmissive(selectedObject, 0x444444);
+              return [selectedObject];
+            }
+            const already = prev.includes(selectedObject);
+            let newSelected;
+            if (already) {
+              newSelected = prev.filter(obj => obj !== selectedObject);
+              // Quitar glow del botón deseleccionado
+              setEmissive(selectedObject, 0x000000);
+            } else {
+              newSelected = [...prev, selectedObject];
+              setEmissive(selectedObject, 0x444444);
+            }
+            // Aplicar glow a todos los botones seleccionados
+            newSelected.forEach(btn => setEmissive(btn, 0x444444));
+            return newSelected;
+          });
+        }
+      } else {
+        setSelectedButtons([]);
+        
+        // Si es un aro, seleccionar también su botón asociado
+        if (currentView === 'buttons' && selectedObject.name.toLowerCase().includes('aro')) {
+          // Buscar el botón asociado al aro
+          const buttonNumber = parseInt(selectedObject.name.match(/\d+/)?.[0] || '1', 10);
+          const associatedButton = selectable.buttons.find(btn => 
+            btn.name.toLowerCase().includes('boton') && 
+            btn.name.includes(buttonNumber.toString())
+          );
+          if (associatedButton) {
+            setSelectedForColoring(associatedButton);
+            setEmissive(associatedButton, 0x444444);
+          } else {
+            // Si no encuentra el botón, NO selecciona ni resalta nada
+            setSelectedForColoring(null);
+            return;
+          }
+        } else {
+          // Si es un botón, seleccionarlo normalmente
+          setSelectedForColoring(selectedObject);
+          // Aplicar glow al botón seleccionado
+          setEmissive(selectedObject, 0x444444);
+        }
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
       }
     } else {
       setSelectedForColoring(null);
       setSelectedButtons([]);
+<<<<<<< HEAD
       setSelectedKnobs([]);
+=======
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
     }
   }, [currentView, selectable, selectedForColoring, setEmissive, selectedButtons]);
 
@@ -867,6 +981,7 @@ const MidiConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
       setSelectedForColoring(null);
     }
 
+<<<<<<< HEAD
     // Al volver a vista normal, limpiar selecciones y quitar glow
     if (viewName === 'normal') {
       if (selectedForColoring) setEmissive(selectedForColoring, 0x000000);
@@ -887,6 +1002,20 @@ const MidiConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
       targetView = CAMERA_VIEWS.top;
       controlsRef.current.enabled = false;
     }
+=======
+    if (!cameraRef.current || !controlsRef.current) return;
+
+    let targetView;
+    let enableOrbit;
+    if (viewName === 'normal') {
+      targetView = CAMERA_VIEWS.normal;
+      enableOrbit = true;
+    } else {
+      targetView = CAMERA_VIEWS.top;
+      enableOrbit = false;
+    }
+    controlsRef.current.enabled = enableOrbit;
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
 
     // Animar la cámara y el target igual que en el código vanilla
     gsap.to(cameraRef.current.position, { 
@@ -900,7 +1029,11 @@ const MidiConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
       ...targetView.target, 
       onUpdate: () => controlsRef.current.update() 
     });
+<<<<<<< HEAD
   }, [selectable, selectedForColoring, selectedButtons, selectedKnobs, setEmissive]);
+=======
+  }, [selectable]);
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
 
   // Aplicar color
   const applyColor = useCallback((colorName: string, colorData: PaletteColor) => {
@@ -1319,18 +1452,31 @@ const MidiConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
         </div>
       </main>
 
+<<<<<<< HEAD
       {/* Panel de UI (alineado a Beato16) */}
+=======
+      {/* Panel de UI */}
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
       <div
         className="mobile-panel"
         style={{
           position: 'fixed',
           top: 0,
+<<<<<<< HEAD
           width: currentView === 'normal' ? 'clamp(80px, 20vw, 112px)' : 'clamp(300px, 35vw, 360px)',
           height: '100vh',
           display: 'flex',
           zIndex: 100,
           transition: 'all 0.4s ease',
           right: window.innerWidth <= 768 ? -35 : -20
+=======
+          right: '-35px',
+          width: currentView === 'normal' ? 'clamp(80px, 20vw, 112px)' : 'clamp(280px, 70vw, 320px)',
+          height: '100vh',
+          display: 'flex',
+          zIndex: 10,
+          transition: 'all 0.4s ease'
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
         }}
       >
 
@@ -1339,9 +1485,13 @@ const MidiConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
           style={{
             width: 'clamp(60px, 15vw, 112px)',
             flexShrink: 0,
+<<<<<<< HEAD
             paddingTop: 'clamp(20px, 5vh, 160px)',
             position: 'relative',
             zIndex: 50
+=======
+            paddingTop: 'clamp(20px, 5vh, 160px)'
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
           }}
         >
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(4px, 1vw, 6px)' }}>
@@ -1364,7 +1514,10 @@ const MidiConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
           alignItems: 'center',
           justifyContent: 'center',
           position: 'relative',
+<<<<<<< HEAD
           zIndex: 100,
+=======
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
           transition: 'all 0.3s ease',
           color: 'white',
           cursor: id === 'faders' ? 'not-allowed' : 'pointer',
@@ -1421,8 +1574,12 @@ const MidiConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
               width: 'clamp(20px, 5vw, 40px)',
               height: 'clamp(20px, 5vw, 40px)',
               objectFit: 'contain',
+<<<<<<< HEAD
               margin: 'auto',
               pointerEvents: 'none'
+=======
+              margin: 'auto'
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
             }}
             onError={(e) => {
               console.error('Error loading image:', e);
@@ -1438,8 +1595,12 @@ const MidiConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
               height: 'clamp(20px, 5vw, 40px)',
               fill: 'white',
               color: 'white',
+<<<<<<< HEAD
               margin: 'auto',
               pointerEvents: 'none'
+=======
+              margin: 'auto'
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
             }}
             fill="#fff"
           >
@@ -1452,6 +1613,7 @@ const MidiConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
   </div>
 </div>
 
+<<<<<<< HEAD
         {/* Contenido de la UI (fondo, borde y padding como Beato16) */}
         <div 
           style={{
@@ -1463,6 +1625,15 @@ const MidiConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
             borderLeft: currentView === 'normal' ? 'none' : '1px solid #4b5563',
             backdropFilter: currentView === 'normal' ? undefined : 'blur(6px)',
             overflowY: currentView === 'normal' ? 'visible' : 'auto'
+=======
+        {/* Contenido de la UI */}
+        <div 
+          style={{
+            flex: 1,
+            padding: 'clamp(4px, 1vw, 8px)',
+            display: 'flex',
+            flexDirection: 'column'
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
           }}
         >
           {/* Header - Solo logo en vista normal */}
@@ -1489,6 +1660,7 @@ const MidiConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
             />
           </div>
 
+<<<<<<< HEAD
           {/* Sección de colores - igual a Beato16 */}
           {currentView !== 'normal' && (
             <div style={{ marginTop: 'clamp(12px, 2.5vw, 20px)' }} className="animate-fadeIn">
@@ -1499,6 +1671,18 @@ const MidiConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
                   letterSpacing: '0.05em',
                   textTransform: 'uppercase',
                   margin: '0 0 clamp(10px, 2vw, 14px) 0',
+=======
+          {/* Sección de colores - solo visible cuando no está en vista normal */}
+          {currentView !== 'normal' && (
+            <div style={{ marginTop: 'clamp(16px, 4vw, 24px)' }} className="animate-fadeIn">
+              <p 
+                style={{
+                  fontWeight: 900,
+                  fontSize: 'clamp(10px, 2.5vw, 14px)',
+                  letterSpacing: '0.05em',
+                  textTransform: 'uppercase',
+                  margin: '0 0 clamp(8px, 2vw, 12px) 0',
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
                   color: '#e5e7eb',
                   textAlign: 'left'
                 }}
@@ -1509,6 +1693,7 @@ const MidiConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
               <div 
                 style={{
                   display: 'grid',
+<<<<<<< HEAD
                   gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
                   rowGap: '5px',
                   columnGap: '0px',
@@ -1526,10 +1711,27 @@ const MidiConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
                     style={{
                       width: 'clamp(30px, 7vw, 44px)',
                       height: 'clamp(30px, 7vw, 44px)',
+=======
+                  gridTemplateColumns: 'repeat(2, 1fr)',
+                  gap: 'clamp(4px, 1vw, 6px)',
+                  padding: 0,
+                  justifyItems: 'end',
+                  marginLeft: 'auto'
+                }}
+                className="animate-scaleIn"
+              >
+                {Object.entries(getCurrentColors()).map(([name, colorData], index) => (
+                  <div
+                    key={name}
+                    style={{
+                      width: 'clamp(32px, 8vw, 40px)',
+                      height: 'clamp(32px, 8vw, 40px)',
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
                       borderRadius: '50%',
                       cursor: 'pointer',
                       border: '1px solid #a259ff',
                       boxShadow: '0 0 6px 1px rgba(162, 89, 255, 0.33)',
+<<<<<<< HEAD
                       transition: 'transform 0.15s ease, margin-left 0.15s ease',
                       backgroundColor: (colorData as any).hex,
                       animationDelay: `${index * 40}ms`,
@@ -1539,6 +1741,16 @@ const MidiConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
                     onClick={() => applyColor(name, colorData as any)}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.transform = 'scale(1.07)';
+=======
+                      transition: 'all 0.2s ease',
+                      backgroundColor: colorData.hex,
+                      animationDelay: `${index * 50}ms`
+                    }}
+                    title={name}
+                    onClick={() => applyColor(name, colorData)}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'scale(1.1)';
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.transform = 'scale(1)';
@@ -1552,6 +1764,7 @@ const MidiConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
         </div>
       </div>
 
+<<<<<<< HEAD
       {/* Botón de finalizar (solo visible en vista normal) */}
       {currentView === 'normal' && (
         <button 
@@ -1559,6 +1772,21 @@ const MidiConfigurator: React.FC<{ onProductChange?: (product: 'beato' | 'knobo'
           className="fixed bottom-10 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 text-lg font-bold uppercase tracking-wide text-black bg-purple-400 border-none rounded cursor-pointer transition-all duración-200 shadow-lg hover:bg-yellow-200 hover:scale-105 hover:shadow-xl shadow-[0_0_8px_2px_#a259ff80,0_0_16px_4px_#0ff5]"
         >
           Finish and Send Configuration
+=======
+      {/* Botón de comprar (solo visible en vista normal) */}
+      {currentView === 'normal' && (
+        <button 
+          onClick={() => {
+            const emailDestino = 'tu-email-de-negocio@ejemplo.com';
+            const asunto = 'Configuración de Knobo';
+            const body = `\nHola,\n\nEsta es mi configuración para el Knobo:\n\n- Chasis: ${chosenColors.chasis}\n- Botones: ${Object.values(chosenColors.buttons).join(', ') || 'Default'}\n- Knobs: ${Object.values(chosenColors.knobs).join(', ') || 'Default'}\n\n(Adjunto también los datos en formato JSON para precisión: ${JSON.stringify(chosenColors)})\n\n¡Gracias!\n`;
+            const link = `mailto:${emailDestino}?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(body)}`;
+            window.location.href = link;
+          }}
+          className="fixed bottom-10 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 text-lg font-bold uppercase tracking-wide text-black bg-purple-400 border-none rounded cursor-pointer transition-all duración-200 shadow-lg hover:bg-yellow-200 hover:scale-105 hover:shadow-xl shadow-[0_0_8px_2px_#a259ff80,0_0_16px_4px_#0ff5]"
+        >
+          Finalizar y Enviar Configuración
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
         </button>
       )}
 

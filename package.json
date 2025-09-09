@@ -2,7 +2,11 @@
   "name": "configurator",
   "private": true,
   "version": "0.0.0",
+<<<<<<< HEAD
   "homepage": "https://josepro66.github.io/CONFIGURATOR",
+=======
+  "homepage": "https://josepro66.github.io/CONFIGURADOR",
+>>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
   "type": "module",
   "scripts": {
     "dev": "concurrently \"npm run vite\" \"node server/index.js\"",
