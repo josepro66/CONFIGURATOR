@@ -155,17 +155,10 @@ const BeatoLoadingScreen: React.FC<BeatoLoadingScreenProps> = ({ isVisible, onCo
             crossOrigin="anonymous"
             autoPlay
           >
-<<<<<<< HEAD
             <source src={`${import.meta.env.BASE_URL}videos/video.mp4`} type="video/mp4" />
             {/* Fallback a imagen si el video no carga */}
             <img 
               src={`${import.meta.env.BASE_URL}textures/carga.jpg`} 
-=======
-            <source src="/CONFIGURADOR/videos/video.mp4" type="video/mp4" />
-            {/* Fallback a imagen si el video no carga */}
-            <img 
-              src="/textures/carga.jpg" 
->>>>>>> 5552411d31ab59e609c5b6d4bc92af73ca326af1
               alt="Loading background" 
               style={{
                 position: 'absolute',
